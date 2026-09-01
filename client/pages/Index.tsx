@@ -1,62 +1,64 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  Activity, AlertTriangle, BarChart3, Bell, BrainCircuit, ChevronDown, ChevronLeft, ChevronRight,
+  CircleHelp, CloudRain, Crosshair, FileText, Layers3, LayoutDashboard, Map, Menu, Moon, Package,
+  PanelLeftClose, PanelLeftOpen, Route as RouteIcon, Search, Settings, Sun, Truck, UserRound, X, Zap,
+  Maximize2, Minus, Plus, Navigation, Siren, CloudLightning, ShieldCheck, MoreHorizontal,
+} from "lucide-react";
+import { alerts, activity, incidents, kpis, regions, routes, vehicles } from "@/data/dashboard";
 
-export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
+const iconMap: Record<string, any> = { truck: Truck, route: RouteIcon, risk: BrainCircuit, incident: AlertTriangle, package: Package, activity: Activity, cloud: CloudRain, bell: Bell, landslide: Siren, rain: CloudLightning, road: Navigation };
+const toneMap: Record<string, string> = { blue: "text-blue-600 bg-blue-50", teal: "text-teal-600 bg-teal-50", red: "text-red-600 bg-red-50", amber: "text-amber-600 bg-amber-50", green: "text-emerald-600 bg-emerald-50", purple: "text-violet-600 bg-violet-50" };
+const riskClass = (risk: number) => risk >= 70 ? "risk-high" : risk >= 40 ? "risk-medium" : "risk-low";
 
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-            />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
-            />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
-      </div>
-    </div>
-  );
+function Pill({ children, tone = "slate" }: { children: React.ReactNode; tone?: string }) {
+  const styles: Record<string, string> = { slate: "bg-slate-100 text-slate-600", red: "bg-red-50 text-red-700", amber: "bg-amber-50 text-amber-700", green: "bg-emerald-50 text-emerald-700", blue: "bg-blue-50 text-blue-700" };
+  return <span className={`status-pill ${styles[tone] || styles.slate}`}>{children}</span>;
 }
+
+function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
+  const nav = [["Overview", LayoutDashboard], ["Live Map", Map], ["Vehicles", Truck], ["Routes", RouteIcon], ["Risk Intelligence", BrainCircuit], ["Incidents", AlertTriangle], ["Weather & Hazards", CloudRain], ["Alerts", Bell], ["Analytics", BarChart3], ["Reports", FileText], ["Settings", Settings]];
+  return <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+    <div className="brand"><div className="brand-mark"><RouteIcon size={20} /></div><div className="brand-copy"><strong>NER SmartLogix <span>AI</span></strong><small>Smart Logistics Intelligence</small></div><button className="icon-button sidebar-toggle" onClick={() => setCollapsed(!collapsed)} aria-label="Collapse sidebar">{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div>
+    <div className="mobile-close"><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20} /></button></div>
+    <nav className="nav-list">{nav.map(([label, Icon]: any) => <button key={label} className={`nav-item ${label === "Overview" ? "active" : ""}`} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{label === "Alerts" && <b className="nav-badge">23</b>}</button>)}</nav>
+    <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help & Support</span></button><div className="profile"><div className="avatar">LA</div><div className="profile-copy"><strong>Logistics Administrator</strong><small>Operations Manager</small></div><ChevronDown size={16} /></div></div>
+  </aside>;
+}
+
+function Header({ region, setRegion, dark, setDark, setMobileOpen }: any) {
+  const [notice, setNotice] = useState(false);
+  const [profile, setProfile] = useState(false);
+  const [online, setOnline] = useState(true);
+  return <header className="topbar"><div className="mobile-menu"><button className="icon-button" onClick={() => setMobileOpen(true)} aria-label="Open menu"><Menu size={22} /></button></div><div className="title-block"><h1>Overview</h1><p>North Eastern Region Logistics Command Center</p></div><div className="header-actions"><label className="search-box"><Search size={17} /><input placeholder="Search vehicle, route, district…" /></label><div className="select-wrap"><Map size={16} /><select value={region} onChange={e => setRegion(e.target.value)} aria-label="Select region">{regions.map(r => <option key={r}>{r}</option>)}</select><ChevronDown size={14} /></div><button className={`system-status ${online ? "online" : "offline"}`} onClick={() => setOnline(!online)}><i />{online ? "System Operational" : "Offline Mode"}</button><div className="relative"><button className="icon-button notification-button" onClick={() => setNotice(!notice)} aria-label="Notifications"><Bell size={19} /><b>3</b></button>{notice && <div className="dropdown notice-drop"><strong>Notifications</strong><p>3 critical events need review</p><button>View all alerts</button></div>}</div><button className="icon-button theme-toggle" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">{dark ? <Sun size={19} /> : <Moon size={19} />}</button><div className="relative"><button className="header-avatar" onClick={() => setProfile(!profile)}>LA <ChevronDown size={13} /></button>{profile && <div className="dropdown profile-drop"><strong>Logistics Administrator</strong><p>Operations Manager</p><button>Account settings</button></div>}</div></div></header>;
+}
+
+function KpiCards() { return <div className="kpi-grid">{kpis.map((kpi) => { const Icon = iconMap[kpi.icon]; return <button className={`kpi-card ${kpi.tone === "red" ? "attention" : ""}`} key={kpi.label} onClick={() => console.log(`Open ${kpi.label}`)}><div className="kpi-top"><span className={`kpi-icon ${toneMap[kpi.tone]}`}><Icon size={18} /></span><MoreHorizontal size={17} className="muted" /></div><div className="kpi-value">{kpi.value}</div><div className="kpi-label">{kpi.label}</div><div className="kpi-footer"><span className={kpi.trend.startsWith("-") || kpi.tone === "red" ? "trend negative" : "trend"}>{kpi.trend}</span><span className="muted">{kpi.note}</span><span className={`dot ${kpi.tone}`} /> <span className="muted">{kpi.status}</span></div></button> })}</div> }
+
+function MapPanel() {
+  const [selected, setSelected] = useState<"vehicle" | "incident" | "route" | null>("vehicle");
+  const [layers, setLayers] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const points = [{ name: "Guwahati", x: 22, y: 72 }, { name: "Itanagar", x: 47, y: 29 }, { name: "Shillong", x: 31, y: 79 }, { name: "Imphal", x: 70, y: 76 }, { name: "Aizawl", x: 60, y: 91 }, { name: "Kohima", x: 79, y: 56 }, { name: "Agartala", x: 44, y: 94 }, { name: "Gangtok", x: 5, y: 67 }];
+  return <section className="panel map-panel"><div className="panel-header"><div><h2>Live Regional Accessibility Map</h2><p>Real-time view of vehicles, routes, incidents and accessibility conditions.</p></div><button className="outline-button"><Layers3 size={15} /> Map layers</button></div><div className="map-canvas"><div className="map-grid" style={{ transform: `scale(${zoom})` }}><div className="region-shape" /><svg className="routes-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M20 73 C32 62 39 40 47 29 S63 50 70 76" className="route-line route-red" /><path d="M21 73 C33 79 56 79 70 76" className="route-line route-green" /><path d="M47 29 C52 49 58 65 70 76" className="route-line route-yellow" /><path d="M20 73 C39 59 57 45 70 76" className="route-line route-alt" /></svg>{points.map(p => <div className="city" key={p.name} style={{ left: `${p.x}%`, top: `${p.y}%` }}><i />{p.name}</div>)}<button className="marker vehicle-marker selected" style={{ left: "39%", top: "50%" }} onClick={() => setSelected("vehicle")} aria-label="Vehicle NR-042"><Truck size={13} /></button><button className="marker vehicle-marker delayed" style={{ left: "66%", top: "67%" }} onClick={() => setSelected("vehicle")} aria-label="Delayed vehicle"><Truck size={13} /></button><button className="marker incident-marker" style={{ left: "51%", top: "38%" }} onClick={() => setSelected("incident")} aria-label="Landslide incident"><AlertTriangle size={14} /></button><button className="marker incident-marker flood" style={{ left: "57%", top: "81%" }} onClick={() => setSelected("incident")} aria-label="Flood incident"><AlertTriangle size={14} /></button></div><div className="map-controls"><button onClick={() => setZoom(Math.min(1.3, zoom + .1))} aria-label="Zoom in"><Plus size={16} /></button><button onClick={() => setZoom(Math.max(.9, zoom - .1))} aria-label="Zoom out"><Minus size={16} /></button><button aria-label="Current location"><Crosshair size={16} /></button><button aria-label="Fullscreen"><Maximize2 size={16} /></button></div><div className="layer-menu-wrap"><button className="layer-trigger" onClick={() => setLayers(!layers)}><Layers3 size={15} /> Layers</button>{layers && <div className="layer-menu">{["Vehicles", "Routes", "Incidents", "Weather", "Risk Zones", "Road Accessibility"].map(x => <label key={x}><input type="checkbox" defaultChecked /> {x}</label>)}</div>}</div><div className="map-legend"><span><i className="legend-green" />Low risk</span><span><i className="legend-yellow" />Moderate</span><span><i className="legend-red" />High risk</span></div>{selected && <div className="map-popup"><button onClick={() => setSelected(null)}><X size={14} /></button>{selected === "vehicle" ? <><small className="eyebrow blue">VEHICLE · ON ROUTE</small><h3>NR-042</h3><p>Near Bhalukpong → Itanagar</p><div className="popup-stats"><span><b>68</b> km/h</span><span><b>4h 18m</b> ETA</span><span><b>42%</b> risk</span></div><button className="popup-action">View vehicle</button></> : <><small className="eyebrow red">INCIDENT · CRITICAL</small><h3>Landslide</h3><p>NH-13 Corridor · reported 10m ago</p><div className="popup-stats"><span><b>3h</b> clearance</span><span><b>Critical</b> severity</span></div><button className="popup-action">View incident</button></>}</div>}</div><div className="map-route-label" onClick={() => setSelected("route")}><span className="route-dot" />Guwahati → Itanagar <b>87% risk</b></div></section>;
+}
+
+function AiPanel({ onCompare }: { onCompare: () => void }) { return <section className="panel ai-panel"><div className="ai-heading"><span className="ai-icon"><BrainCircuit size={20} /></span><div><h2>AI Route Intelligence</h2><p>Decision support for active corridors</p></div><span className="ai-badge">AI POWERED</span></div><div className="ai-route"><div><small className="eyebrow">CURRENT ROUTE</small><h3>Guwahati <span>→</span> Itanagar</h3><p><span className="dot red" /> High Risk corridor</p></div><div className="risk-ring"><strong>87</strong><span>% risk</span></div></div><div className="reason"><AlertTriangle size={17} /><p>Heavy rainfall and reported landslide activity detected along the current corridor.</p></div><div className="recommend"><div className="recommend-head"><span><Zap size={15} /> AI RECOMMENDATION</span><Pill tone="green">31% risk</Pill></div><h3>Use Alternate Route B</h3><div className="recommend-grid"><span><b>+32 min</b>Expected delay</span><span><b>+18 km</b>Additional distance</span><span><b>64%</b>Safety improvement</span></div><ul><li>Lower disruption probability</li><li>Better road accessibility</li><li>Lower weather risk</li><li>Acceptable additional travel time</li></ul></div><div className="ai-actions"><button className="primary-button">View Recommended Route <ChevronRight size={16} /></button><button className="outline-button" onClick={onCompare}>Compare routes</button></div></section> }
+
+function Weather() { return <section className="panel weather-panel"><div className="panel-header"><div><h2>Weather & Hazard Intelligence</h2><p>Guwahati · Updated 2 min ago</p></div><CloudRain className="weather-icon" size={27} /></div><div className="weather-main"><div><strong>24°</strong><span>Heavy Rain</span></div><div className="weather-metrics"><span><b>78 mm</b>Rainfall</span><span><b>42 km/h</b>Wind</span><span><b>4.2 km</b>Visibility</span></div></div><div className="hazards"><span><i className="hazard-high" />Landslide risk <b>HIGH</b></span><span><i className="hazard-mod" />Flood risk <b>MODERATE</b></span><span><i className="hazard-poor" />Road visibility <b>POOR</b></span><span><i className="hazard-high" />Travel condition <b>UNSAFE</b></span></div><button className="text-button">View weather details <ChevronRight size={15} /></button></section> }
+
+function Alerts() { return <section className="panel alerts-panel"><div className="panel-header"><div><h2>Critical Alerts</h2><p>Events requiring operator attention</p></div><Pill tone="red">4 active</Pill></div><div className="alert-list">{alerts.map(a => { const Icon = iconMap[a.icon]; return <div className="alert-row" key={a.title}><span className={`alert-icon ${a.severity.toLowerCase()}`}><Icon size={16} /></span><div><div className="alert-title"><strong>{a.title}</strong><Pill tone={a.severity === "CRITICAL" ? "red" : a.severity === "HIGH" ? "amber" : "blue"}>{a.severity}</Pill></div><p>{a.description}</p><small>{a.time}</small></div><button className="view-button">View</button></div> })}</div><button className="full-button">View all alerts <ChevronRight size={15} /></button></section> }
+
+function RouteTable() { return <section className="panel table-panel"><div className="panel-header"><div><h2>Route Risk Overview</h2><p>Priority corridors across the region</p></div><button className="text-button">View all routes <ChevronRight size={15} /></button></div><div className="table-wrap"><table><thead><tr><th>Route</th><th>Distance</th><th>Risk</th><th>Condition</th><th>ETA</th><th>Status</th></tr></thead><tbody>{routes.map(r => <tr key={r.route}><td><strong>{r.route}</strong></td><td>{r.distance}</td><td><span className={`risk-value ${riskClass(r.risk)}`}>{r.risk}%</span></td><td>{r.condition}</td><td>{r.eta}</td><td><Pill tone={r.risk > 70 ? "red" : r.risk > 40 ? "amber" : "green"}>{r.status}</Pill></td></tr>)}</tbody></table></div></section> }
+
+function Fleet() { return <section className="panel fleet-panel"><div className="panel-header"><div><h2>Fleet Status</h2><p>Live vehicle movement overview</p></div><button className="text-button">View fleet <ChevronRight size={15} /></button></div><div className="fleet-summary"><span><b>94</b><small>Moving</small></span><span><b>21</b><small>Delayed</small></span><span><b>5</b><small>Critical</small></span><span><b>8</b><small>Offline</small></span></div><div className="vehicle-list">{vehicles.map(v => <div className="vehicle-row" key={v.id}><span className="vehicle-avatar"><Truck size={16} /></span><div><strong>{v.id}</strong><small>{v.route}</small></div><span>{v.speed}</span><span className={`risk-value ${riskClass(v.risk)}`}>Risk {v.risk}%</span><Pill tone={v.status === "Delayed" ? "amber" : "green"}>{v.status}</Pill></div>)}</div></section> }
+
+function Incidents() { return <section className="panel table-panel"><div className="panel-header"><div><h2>Recent Incidents</h2><p>Latest reports from field operations</p></div><button className="text-button">View all incidents <ChevronRight size={15} /></button></div><div className="table-wrap"><table><thead><tr><th>Type</th><th>Location</th><th>Severity</th><th>Time</th><th>Status</th></tr></thead><tbody>{incidents.map(i => <tr key={i[0]}><td><strong>{i[0]}</strong></td><td>{i[1]}</td><td><Pill tone={i[2] === "Critical" ? "red" : i[2] === "High" ? "amber" : "blue"}>{i[2]}</Pill></td><td>{i[3]}</td><td>{i[4]}</td></tr>)}</tbody></table></div></section> }
+
+function Analytics() { return <><section className="panel chart-panel"><div className="panel-header"><div><h2>Network Accessibility Trend</h2><p>Last 24 hours · Accessibility %</p></div><Pill tone="red">-3.2%</Pill></div><div className="line-chart"><div className="chart-y"><span>100%</span><span>90%</span><span>80%</span></div><svg viewBox="0 0 600 170" preserveAspectRatio="none"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#2a76e8" stopOpacity=".18" /><stop offset="1" stopColor="#2a76e8" stopOpacity="0" /></linearGradient></defs><path d="M0 35 C50 25 65 55 110 42 S175 48 220 66 S285 54 325 83 S390 70 430 96 S490 104 540 115 S575 125 600 132 L600 170 L0 170Z" fill="url(#area)" /><path d="M0 35 C50 25 65 55 110 42 S175 48 220 66 S285 54 325 83 S390 70 430 96 S490 104 540 115 S575 125 600 132" fill="none" stroke="#2674df" strokeWidth="3" /></svg><div className="chart-x"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span></div></div><p className="chart-note"><span />Accessibility decreased due to weather-related disruptions.</p></section><section className="panel chart-panel"><div className="panel-header"><div><h2>Risk Distribution</h2><p>342 monitored routes</p></div><button className="icon-button"><MoreHorizontal size={18} /></button></div><div className="donut-layout"><div className="donut"><div><strong>342</strong><span>routes</span></div></div><div className="donut-legend"><span><i className="legend-green" />Low risk <b>62%</b></span><span><i className="legend-yellow" />Moderate <b>24%</b></span><span><i className="legend-red" />High <b>11%</b></span><span><i className="legend-critical" />Critical <b>3%</b></span></div></div></section></> }
+
+function ActivityFeed() { return <section className="panel activity-panel"><div className="panel-header"><div><h2>AI System Activity</h2><p>Automated intelligence events</p></div><span className="live-label"><i /> LIVE</span></div><div className="activity-list">{activity.map(([time, text, ico]) => { const Icon = iconMap[ico]; return <div key={time}><span className="activity-icon"><Icon size={15} /></span><span><strong>{text}</strong><small>{time}</small></span></div> })}</div></section> }
+
+function CompareModal({ close }: { close: () => void }) { const cols = [["Route A — Current", "340 km", "8h 40m", "87%", "Severe", "Partially blocked"], ["Route B — AI Recommended", "358 km", "9h 12m", "31%", "Moderate", "Accessible"], ["Route C — Alternative", "372 km", "9h 35m", "22%", "Low", "Accessible"]]; return <div className="modal-backdrop" onClick={close}><div className="compare-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={close}><X size={19} /></button><small className="eyebrow blue">DECISION SUPPORT</small><h2>AI Route Comparison</h2><p className="modal-subtitle">Compare predicted outcomes before dispatching the next vehicle.</p><div className="compare-grid">{cols.map((c, idx) => <div className={`compare-col ${idx === 1 ? "recommended" : ""}`} key={c[0]}>{idx === 1 && <span className="recommended-label">AI RECOMMENDED</span>}<h3>{c[0]}</h3>{[["Distance", c[1]], ["ETA", c[2]], ["Risk", c[3]], ["Weather", c[4]], ["Road", c[5]]].map(([l, v]) => <div className="compare-row" key={l}><span>{l}</span><b>{v}</b></div>)}</div>)}</div><div className="modal-footer"><p>Recommended because it provides the best balance between safety, accessibility and travel time.</p><div><button className="primary-button" onClick={close}>Select Route B</button><button className="outline-button" onClick={close}>Cancel</button></div></div></div></div> }
+
+export default function Index() { const [collapsed, setCollapsed] = useState(false); const [mobileOpen, setMobileOpen] = useState(false); const [region, setRegion] = useState(regions[0]); const [dark, setDark] = useState(false); const [compare, setCompare] = useState(false); const greeting = useMemo(() => "Good Morning, Logistics Administrator", []); return <div className={dark ? "app-shell dark-mode" : "app-shell"}><Sidebar {...{ collapsed, setCollapsed, mobileOpen, setMobileOpen }} /><main className="main-shell"><Header {...{ region, setRegion, dark, setDark, setMobileOpen }} /><div className="dashboard"><div className="dashboard-intro"><div><span className="eyebrow blue">OPERATIONS OVERVIEW · 02 SEP 2026</span><h2>{greeting}</h2><p>Monitor transportation accessibility, vehicle movement, weather hazards and AI-powered route risks across the North Eastern Region.</p></div><div className="date-card"><div className="date-icon"><Activity size={18} /></div><div><strong>02 September 2026</strong><span><i /> Live Monitoring</span></div></div></div><KpiCards /><div className="main-grid"><MapPanel /><AiPanel onCompare={() => setCompare(true)} /></div><div className="two-col"><Weather /><Alerts /></div><RouteTable /><Fleet /><div className="two-col analytics-row"><Analytics /></div><ActivityFeed /></div></main>{compare && <CompareModal close={() => setCompare(false)} />}</div> }
