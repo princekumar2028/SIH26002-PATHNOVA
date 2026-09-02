@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { regions } from "@/data/dashboard";
 import { vehicleRecords, VehicleRecord } from "@/data/vehicles";
 
-const nav = [["Overview", LayoutDashboard, "/"], ["Live Map", MapIcon, "/live-map"], ["Vehicles", Truck, "/vehicles"], ["Routes", RouteIcon, "#"], ["Risk Intelligence", BrainCircuit, "#"], ["Incidents", AlertTriangle, "#"], ["Weather & Hazards", CloudRain, "#"], ["Alerts", Bell, "#"], ["Analytics", BarChart3, "#"], ["Reports", FileText, "#"], ["Settings", Settings, "#"]];
+const nav = [["Overview", LayoutDashboard, "/"], ["Live Map", MapIcon, "/live-map"], ["Vehicles", Truck, "/vehicles"], ["Routes", RouteIcon, "/routes"], ["Risk Intelligence", BrainCircuit, "#"], ["Incidents", AlertTriangle, "#"], ["Weather & Hazards", CloudRain, "#"], ["Alerts", Bell, "#"], ["Analytics", BarChart3, "#"], ["Reports", FileText, "#"], ["Settings", Settings, "#"]];
 const statusTone = (x: string) => x === "Moving" ? "green" : x === "Delayed" ? "amber" : x === "Critical" ? "red" : "slate";
 const riskTone = (x: string) => x === "Low" ? "green" : x === "Medium" ? "amber" : x === "High" ? "red" : "slate";
 

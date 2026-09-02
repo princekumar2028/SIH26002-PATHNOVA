@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import LiveMap from "./pages/LiveMap";
 import Vehicles from "./pages/Vehicles";
+import RoutesPage from "./pages/Routes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/live-map" element={<LiveMap />} />
           <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/routes" element={<RoutesPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
