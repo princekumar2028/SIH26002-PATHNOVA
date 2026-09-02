@@ -11,6 +11,7 @@ import LiveMap from "./pages/LiveMap";
 import Vehicles from "./pages/Vehicles";
 import RoutesPage from "./pages/Routes";
 import RiskIntelligence from "./pages/RiskIntelligence";
+import Incidents from "./pages/Incidents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/risk-intelligence" element={<RiskIntelligence />} />
+          <Route path="/incidents" element={<Incidents />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
