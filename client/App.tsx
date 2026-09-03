@@ -13,6 +13,7 @@ import RoutesPage from "./pages/Routes";
 import RiskIntelligence from "./pages/RiskIntelligence";
 import Incidents from "./pages/Incidents";
 import WeatherHazards from "./pages/WeatherHazards";
+import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/risk-intelligence" element={<RiskIntelligence />} />
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/weather-hazards" element={<WeatherHazards />} />
+          <Route path="/alerts" element={<Alerts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
