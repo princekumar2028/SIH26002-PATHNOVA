@@ -18,15 +18,18 @@ import Analytics from "./pages/Analytics";
 import AICommandCenter from "./pages/AICommandCenter";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import { GlobalFieldTools, NetworkProvider } from "./components/OfflineUX";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <NetworkProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <GlobalFieldTools />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/live-map" element={<LiveMap />} />
@@ -44,6 +47,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </NetworkProvider>
   </QueryClientProvider>
 );
 
