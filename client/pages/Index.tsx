@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Activity, AlertTriangle, BarChart3, Bell, BrainCircuit, ChevronDown, ChevronLeft, ChevronRight,
   CircleHelp, CloudRain, Crosshair, FileText, Layers3, LayoutDashboard, Map, Menu, Moon, Package,
@@ -18,11 +18,12 @@ function Pill({ children, tone = "slate" }: { children: React.ReactNode; tone?: 
 }
 
 function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
+  const location = useLocation();
   const nav = [["Overview", LayoutDashboard], ["Live Map", Map], ["Vehicles", Truck], ["Routes", RouteIcon], ["Risk Intelligence", BrainCircuit], ["Incidents", AlertTriangle], ["Weather & Hazards", CloudRain], ["Alerts", Bell], ["Analytics", BarChart3], ["Reports", FileText], ["AI Command Center", BrainCircuit], ["Settings", Settings]];
   return <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
-    <div className="brand"><div className="brand-mark"><RouteIcon size={20} /></div><div className="brand-copy"><strong>NER SmartLogix <span>AI</span></strong><small>Smart Logistics Intelligence</small></div><button className="icon-button sidebar-toggle" onClick={() => setCollapsed(!collapsed)} aria-label="Collapse sidebar">{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div>
+    <div className="brand"><div className="brand-mark"><RouteIcon size={20} /></div><div className="brand-copy"><strong>PATHNOVA</strong><small>AI-Powered Logistics & Connectivity Intelligence</small></div><button className="icon-button sidebar-toggle" onClick={() => setCollapsed(!collapsed)} aria-label="Collapse sidebar">{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div>
     <div className="mobile-close"><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20} /></button></div>
-    <nav className="nav-list">{nav.map(([label, Icon]: any) => label !== "Overview" ? <Link key={label} to={label === "Live Map" ? "/live-map" : label === "Vehicles" ? "/vehicles" : label === "Routes" ? "/routes" : label === "Risk Intelligence" ? "/risk-intelligence" : label === "Incidents" ? "/incidents" : label === "Weather & Hazards" ? "/weather-hazards" : label === "Alerts" ? "/alerts" : label === "Analytics" ? "/analytics" : label === "Settings" ? "/settings" : "/ai-command-center"} className="nav-item" title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span></Link> : <button key={label} className={`nav-item ${label === "Overview" ? "active" : ""}`} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{label === "Alerts" && <b className="nav-badge">23</b>}</button>)}</nav>
+    <nav className="nav-list">{nav.map(([label, Icon]: any) => label !== "Overview" ? <Link key={label} to={label === "Live Map" ? "/live-map" : label === "Vehicles" ? "/vehicles" : label === "Routes" ? "/routes" : label === "Risk Intelligence" ? "/risk-intelligence" : label === "Incidents" ? "/incidents" : label === "Weather & Hazards" ? "/weather-hazards" : label === "Alerts" ? "/alerts" : label === "Analytics" ? "/analytics" : label === "Settings" ? "/settings" : "/ai-command-center"} className="nav-item" title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span></Link> : <Link key={label} to="/dashboard" className={`nav-item ${location.pathname === "/" || location.pathname === "/dashboard" ? "active" : ""}`} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{label === "Alerts" && <b className="nav-badge">23</b>}</Link>)}</nav>
     <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help & Support</span></button><div className="profile"><div className="avatar">LA</div><div className="profile-copy"><strong>Logistics Administrator</strong><small>Operations Manager</small></div><ChevronDown size={16} /></div></div>
   </aside>;
 }

@@ -32,7 +32,9 @@ const App = () => (
         <GlobalFieldTools />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Index />} />
           <Route path="/live-map" element={<LiveMap />} />
+          <Route path="/map" element={<LiveMap />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/routes" element={<RoutesPage />} />
           <Route path="/risk-intelligence" element={<RiskIntelligence />} />
