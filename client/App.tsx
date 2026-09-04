@@ -15,6 +15,7 @@ import Incidents from "./pages/Incidents";
 import WeatherHazards from "./pages/WeatherHazards";
 import Alerts from "./pages/Alerts";
 import Analytics from "./pages/Analytics";
+import AICommandCenter from "./pages/AICommandCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/weather-hazards" element={<WeatherHazards />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/ai-command-center" element={<AICommandCenter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
