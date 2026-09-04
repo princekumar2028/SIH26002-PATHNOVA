@@ -20,12 +20,14 @@ function Pill({ children, tone = "slate" }: { children: React.ReactNode; tone?: 
 
 function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
   const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
   const nav = [["Overview", LayoutDashboard], ["Live Map", Map], ["Vehicles", Truck], ["Routes", RouteIcon], ["Risk Intelligence", BrainCircuit], ["Incident Reporting", AlertTriangle], ["Weather & Hazards", CloudRain], ["Alerts", Bell]];
   return <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
     <div className="brand"><div className="brand-mark"><PathnovaLogo /></div><div className="brand-copy"><strong>PATHNOVA</strong></div><button className="icon-button sidebar-toggle" onClick={() => setCollapsed(!collapsed)} aria-label="Collapse sidebar">{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div>
     <div className="mobile-close"><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20} /></button></div>
     <nav className="nav-list">{nav.map(([label, Icon]: any) => label !== "Overview" ? <Link key={label} to={label === "Live Map" ? "/live-map" : label === "Vehicles" ? "/vehicles" : label === "Routes" ? "/routes" : label === "Risk Intelligence" ? "/risk-intelligence" : label === "Incident Reporting" ? "/incidents" : label === "Weather & Hazards" ? "/weather-hazards" : label === "Alerts" ? "/alerts" : "/alerts"} className="nav-item" title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span></Link> : <Link key={label} to="/dashboard" className={`nav-item ${location.pathname === "/" || location.pathname === "/dashboard" ? "active" : ""}`} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span>{label === "Alerts" && <b className="nav-badge">23</b>}</Link>)}</nav>
-    <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={18} /><span>Help & Support</span></button><div className="profile"><div className="avatar">LA</div><div className="profile-copy"><strong>Logistics Administrator</strong><small>Operations Manager</small></div><ChevronDown size={16} /></div></div>
+    <div className="sidebar-bottom user-sidebar-bottom"><div className="profile-menu"><button type="button" className="profile" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><div className="avatar">LA</div><div className="profile-copy"><strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong><small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small></div><ChevronDown size={16} /></button>{profileOpen && <div className="profile-dropdown" role="menu"><button type="button" role="menuitem" onClick={() => setProfileOpen(false)}>Profile</button><button type="button" role="menuitem" onClick={() => { setLoggedOut(true); setProfileOpen(false); }}>Logout</button></div>}</div></div>
   </aside>;
 }
 
