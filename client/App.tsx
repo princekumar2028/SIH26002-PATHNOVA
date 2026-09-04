@@ -14,9 +14,6 @@ import RiskIntelligence from "./pages/RiskIntelligence";
 import Incidents from "./pages/Incidents";
 import WeatherHazards from "./pages/WeatherHazards";
 import Alerts from "./pages/Alerts";
-import Analytics from "./pages/Analytics";
-import AICommandCenter from "./pages/AICommandCenter";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { GlobalFieldTools, NetworkProvider } from "./components/OfflineUX";
 
@@ -41,9 +38,6 @@ const App = () => (
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/weather-hazards" element={<WeatherHazards />} />
           <Route path="/alerts" element={<Alerts />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/ai-command-center" element={<AICommandCenter />} />
-          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
