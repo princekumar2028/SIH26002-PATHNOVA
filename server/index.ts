@@ -5,6 +5,7 @@ import { handleDemo } from "./routes/demo";
 import { handleSupabaseTest } from "./routes/supabase-test";
 import { handleGetIncidents, handleCreateIncident } from "./routes/incidents";
 import { handleUploadPhoto } from "./routes/upload-photo";
+import { handleGetWeather } from "./routes/weather";
 
 export function createServer() {
   const app = express();
@@ -27,6 +28,9 @@ export function createServer() {
   app.get("/api/incidents", handleGetIncidents);
   app.post("/api/incidents", handleCreateIncident);
   app.post("/api/incidents/upload-photo", handleUploadPhoto);
+
+  // Weather API
+  app.get("/api/weather", handleGetWeather);
 
   return app;
 }

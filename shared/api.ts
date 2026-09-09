@@ -85,3 +85,39 @@ export interface GetIncidentsResponse {
   incidents: Incident[];
   count: number;
 }
+
+// ---------------------------------------------------------------------------
+// Weather API types
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalised weather data returned by GET /api/weather
+ */
+export interface WeatherData {
+  location_name: string;
+  region: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  temperature_c: number;
+  feels_like_c: number;
+  humidity_percent: number;
+  wind_speed_kph: number;
+  wind_direction: string;
+  precipitation_mm: number;
+  visibility_km: number;
+  condition: string;
+  condition_icon: string;
+  last_updated: string;
+}
+
+/**
+ * Envelope returned by GET /api/weather
+ */
+export interface WeatherResponse {
+  success: boolean;
+  message: string;
+  weather?: WeatherData;
+  errors?: string[];
+}
