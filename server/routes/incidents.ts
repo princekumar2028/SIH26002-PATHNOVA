@@ -6,7 +6,7 @@ import {
   CreateIncidentRequest,
   CreateIncidentResponse,
   GetIncidentsResponse,
-} from "@shared/api";
+} from "../../shared/api";
 
 /**
  * Validate the request body for creating an incident.
