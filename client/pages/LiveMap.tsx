@@ -1,23 +1,1114 @@
 import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, BarChart3, Bell, BrainCircuit, ChevronDown, ChevronRight, CircleHelp, CloudRain, Crosshair, FileText, Layers3, LayoutDashboard, Map as MapIcon, Maximize2, Menu, Minus, Moon, Navigation, PanelLeftClose, PanelLeftOpen, Plus, Route as RouteIcon, Search, Settings, Sun, Truck, X, Zap } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  BrainCircuit,
+  ChevronDown,
+  ChevronRight,
+  CloudRain,
+  Crosshair,
+  Info,
+  Layers3,
+  LayoutDashboard,
+  Map as MapIcon,
+  Maximize2,
+  Menu,
+  Minus,
+  Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Route as RouteIcon,
+  Search,
+  Sun,
+  Truck,
+  X,
+  MapPin,
+  ShieldAlert,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
-import { regions, routes, vehicles } from "@/data/dashboard";
+import { regions, routes } from "@/data/dashboard";
 
-const cities = ["Guwahati", "Itanagar", "Shillong", "Imphal", "Aizawl", "Kohima", "Agartala", "Gangtok", "Silchar", "Bomdila", "Bhalukpong"];
-const mapPoints = [{ name: "Guwahati", x: 22, y: 72 }, { name: "Itanagar", x: 47, y: 29 }, { name: "Shillong", x: 31, y: 79 }, { name: "Imphal", x: 70, y: 76 }, { name: "Aizawl", x: 60, y: 91 }, { name: "Kohima", x: 79, y: 56 }, { name: "Agartala", x: 44, y: 94 }, { name: "Gangtok", x: 5, y: 67 }, { name: "Silchar", x: 51, y: 84 }, { name: "Bomdila", x: 38, y: 41 }, { name: "Bhalukpong", x: 35, y: 48 }];
-const iconMap: Record<string, any> = { truck: Truck, route: RouteIcon, incident: AlertTriangle, risk: BrainCircuit, cloud: CloudRain };
+// ---------------------------------------------------------------------------
+// Operational Target Types & Dataset
+// ---------------------------------------------------------------------------
 
-function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) { const [profileOpen, setProfileOpen] = useState(false); const [loggedOut, setLoggedOut] = useState(false); const nav = [["Overview", LayoutDashboard, "/"], ["Live Map", MapIcon, "/live-map"], ["Vehicles", Truck, "/vehicles"], ["Routes", RouteIcon, "/routes"], ["Risk Intelligence", BrainCircuit, "/risk-intelligence"], ["Incident Reporting", AlertTriangle, "/incidents"], ["Weather & Hazards", CloudRain, "/weather-hazards"], ["Alerts", Bell, "/alerts"]]; return <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}><div className="brand"><div className="brand-mark"><PathnovaLogo /></div><div className="brand-copy"><strong><span className="path-wordmark">PATH</span><span className="nova-wordmark">NOVA</span></strong></div><button className="icon-button sidebar-toggle" onClick={() => setCollapsed(!collapsed)} aria-label="Collapse sidebar">{collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div><div className="mobile-close"><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20} /></button></div><nav className="nav-list">{nav.map(([label, Icon, href]: any) => href === "#" ? <button key={label} className="nav-item" title={collapsed ? label : undefined}><Icon size={18} /><span>{label}</span>{label === "Alerts" && <b className="nav-badge">23</b>}</button> : <Link key={label} to={href} className={`nav-item ${label === "Live Map" ? "active" : ""}`} title={collapsed ? label : undefined} onClick={() => setMobileOpen(false)}><Icon size={18} /><span>{label}</span></Link>)}</nav><div className="sidebar-bottom user-sidebar-bottom"><div className="profile-menu"><button type="button" className="profile" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><div className="avatar">LA</div><div className="profile-copy"><strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong><small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small></div><ChevronDown size={16} /></button>{profileOpen && <div className="profile-dropdown" role="menu"><button type="button" role="menuitem" onClick={() => setProfileOpen(false)}>Profile</button><button type="button" role="menuitem" onClick={() => { setLoggedOut(true); setProfileOpen(false); }}>Logout</button></div>}</div></div></aside> }
+type TargetType = "incident" | "vehicle" | "route" | "city";
 
-function Header({ region, setRegion, dark, setDark, setMobileOpen }: any) { const [online, setOnline] = useState(true); return <header className="topbar"><div className="mobile-menu"><button className="icon-button" onClick={() => setMobileOpen(true)} aria-label="Open menu"><Menu size={22} /></button></div><div className="title-block"><h1>Live Map</h1><p>Real-time transportation accessibility and logistics monitoring across the North Eastern Region</p></div><div className="header-actions"><div className="select-wrap"><MapIcon size={16} /><select value={region} onChange={e => setRegion(e.target.value)} aria-label="Select region">{regions.map(r => <option key={r}>{r}</option>)}</select><ChevronDown size={14} /></div><span className="date-header">02 Sep 2026 · 10:44 AM</span><button className={`system-status ${online ? "online" : "offline"}`} onClick={() => setOnline(!online)}><i />{online ? "Live Monitoring" : "Offline Mode"}</button><button className="icon-button theme-toggle" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">{dark ? <Sun size={19} /> : <Moon size={19} />}</button><div className="header-avatar">LA</div></div></header> }
+interface MapTarget {
+  type: TargetType;
+  id: string;
+  title: string;
+  category: string;
+  location: string;
+  condition: string;
+  status: string;
+  severity: string;
+  severityTone: "green" | "yellow" | "red" | "critical";
+  lastUpdated: string;
+  details: string;
+  linkTo: string;
+  linkText: string;
+}
 
-function MarkerPopup({ type, close }: { type: "vehicle" | "incident"; close: () => void }) { return <div className="map-popup live-popup"><button onClick={close} aria-label="Close details"><X size={14} /></button><small className={`eyebrow ${type === "vehicle" ? "blue" : "red"}`}>{type === "vehicle" ? "VEHICLE · ON ROUTE" : "INCIDENT · CRITICAL"}</small><h3>{type === "vehicle" ? "Vehicle NR-042" : "Landslide Incident"}</h3><p>{type === "vehicle" ? "Near Bhalukpong → Itanagar" : "NH-13 Corridor"}</p><div className="live-detail-list"><span>Status <b>{type === "vehicle" ? "On Route" : "Partially blocked"}</b></span><span>{type === "vehicle" ? "Speed" : "Severity"} <b>{type === "vehicle" ? "68 km/h" : "CRITICAL"}</b></span><span>{type === "vehicle" ? "ETA" : "Clearance"} <b>{type === "vehicle" ? "4h 18m" : "3 hours"}</b></span><span>{type === "vehicle" ? "Route risk" : "AI Impact"} <b>{type === "vehicle" ? "42%" : "High"}</b></span></div><div className="popup-actions"><button className="popup-action">{type === "vehicle" ? "View Vehicle Details" : "View Incident"}</button><button className="popup-action secondary">{type === "vehicle" ? "Track Route" : "Report Update"}</button></div></div> }
+const NER_CITIES = [
+  { name: "Guwahati", x: 22, y: 72, state: "Assam", role: "Regional Command & Primary Transit Hub" },
+  { name: "Itanagar", x: 47, y: 29, state: "Arunachal Pradesh", role: "Capital Logistics Terminal" },
+  { name: "Shillong", x: 31, y: 79, state: "Meghalaya", role: "Highland Transit Junction" },
+  { name: "Imphal", x: 70, y: 76, state: "Manipur", role: "Eastern Terminal & Border Route Hub" },
+  { name: "Aizawl", x: 60, y: 91, state: "Mizoram", role: "Southern Mountain Gateway" },
+  { name: "Kohima", x: 79, y: 56, state: "Nagaland", role: "Mountain Pass Corridor" },
+  { name: "Agartala", x: 44, y: 94, state: "Tripura", role: "Western Border Terminal" },
+  { name: "Gangtok", x: 5, y: 67, state: "Sikkim", role: "Northwestern Mountain Gateway" },
+  { name: "Silchar", x: 51, y: 84, state: "Assam", role: "Barak Valley Logistics Junction" },
+  { name: "Bomdila", x: 38, y: 41, state: "Arunachal Pradesh", role: "High-Altitude Pass (NH-13)" },
+  { name: "Bhalukpong", x: 35, y: 48, state: "Assam/Arunachal", role: "Border Transit Checkpoint" },
+];
 
-function GisMap({ activeFilter, setActiveFilter }: any) { const [layersOpen, setLayersOpen] = useState(false); const [styleOpen, setStyleOpen] = useState(false); const [mapStyle, setMapStyle] = useState("Standard"); const [zoom, setZoom] = useState(1); const [popup, setPopup] = useState<"vehicle" | "incident" | null>("vehicle"); const [selectedRoute, setSelectedRoute] = useState(0); const [showLocation, setShowLocation] = useState(false); const [layers, setLayers] = useState({ vehicles: true, routes: true, incidents: true, risk: true, districts: true }); const toggle = (key: keyof typeof layers) => setLayers({ ...layers, [key]: !layers[key] }); return <div className="gis-wrap"><div className="map-toolbar"><label className="map-search"><Search size={16} /><input placeholder="Search city, district, route or vehicle..." /></label><button className="outline-button" onClick={() => setActiveFilter("Routes")}><RouteIcon size={15} /> Plan Route</button><div className="map-tool-menu"><button className="outline-button" onClick={() => setLayersOpen(!layersOpen)}><Layers3 size={15} /> Layers</button>{layersOpen && <div className="gis-menu"><strong>Map Layers</strong>{[["vehicles", "Vehicles"], ["routes", "Primary Routes"], ["routes", "Alternate Routes"], ["incidents", "Incidents"], ["risk", "Risk Zones"], ["weather", "Weather"], ["roads", "Road Accessibility"], ["districts", "District Boundaries"]].map(([key, label], i) => <label key={`${label}-${i}`}><input type="checkbox" checked={layers[key as keyof typeof layers] ?? true} onChange={() => key in layers && toggle(key as keyof typeof layers)} />{label}</label>)}</div>}</div><div className="map-tool-menu"><button className="outline-button" onClick={() => setStyleOpen(!styleOpen)}><MapIcon size={15} /> {mapStyle}</button>{styleOpen && <div className="gis-menu style-menu">{["Standard", "Satellite", "Terrain"].map(s => <button key={s} onClick={() => { setMapStyle(s); setStyleOpen(false); }}>{s}</button>)}</div>}</div></div><div className={`live-map-canvas ${mapStyle.toLowerCase()}`}><div className="map-grid" style={{ transform: `scale(${zoom})` }}><div className="district-lines" /><div className="region-shape" /><svg className="routes-svg" viewBox="0 0 100 100" preserveAspectRatio="none">{layers.routes && (activeFilter === "All" || activeFilter === "Routes" || activeFilter === "High Risk") && <><path d="M20 73 C32 62 39 40 47 29 S63 50 70 76" className={`route-line route-red ${selectedRoute === 0 ? "route-selected" : ""}`} onClick={() => setSelectedRoute(0)} /><path d="M21 73 C33 79 56 79 70 76" className={`route-line route-green ${selectedRoute === 1 ? "route-selected" : ""}`} onClick={() => setSelectedRoute(1)} /><path d="M47 29 C52 49 58 65 70 76" className={`route-line route-yellow ${selectedRoute === 2 ? "route-selected" : ""}`} onClick={() => setSelectedRoute(2)} /><path d="M20 73 C39 59 57 45 70 76" className="route-line route-alt" /></>}</svg>{layers.districts && mapPoints.map((p, i) => <div className="city" key={p.name} style={{ left: `${p.x}%`, top: `${p.y}%` }}><i />{p.name}</div>)}{layers.risk && <><div className="risk-zone zone-one" /><div className="risk-zone zone-two" /></>}{layers.vehicles && (activeFilter === "All" || activeFilter === "Vehicles" || activeFilter === "Offline") && <>{[{ x: 39, y: 50, status: "normal", id: "NR-042" }, { x: 66, y: 67, status: "delayed", id: "NR-073" }, { x: 53, y: 83, status: "critical", id: "NR-091" }, { x: 29, y: 76, status: "offline", id: "NR-018" }].map(v => <button key={v.id} className={`marker vehicle-marker ${v.status}`} style={{ left: `${v.x}%`, top: `${v.y}%` }} onClick={() => setPopup("vehicle")} aria-label={v.id}><Truck size={13} /></button>)}</>}{layers.incidents && (activeFilter === "All" || activeFilter === "Incidents" || activeFilter === "Weather") && <>{[[51, 38, "Landslide"], [57, 81, "Flood"], [73, 62, "Road damage"]].map(([x, y, label]) => <button key={label as string} className="marker incident-marker" style={{ left: `${x}%`, top: `${y}%` }} onClick={() => setPopup("incident")} aria-label={label as string}><AlertTriangle size={14} /></button>)}</>}</div>{popup && <MarkerPopup type={popup} close={() => setPopup(null)} />}<div className="map-controls"><button onClick={() => setZoom(Math.min(1.3, zoom + .1))} aria-label="Zoom in"><Plus size={16} /></button><button onClick={() => setZoom(Math.max(.9, zoom - .1))} aria-label="Zoom out"><Minus size={16} /></button><button onClick={() => setShowLocation(!showLocation)} aria-label="My location"><Crosshair size={16} /></button><button aria-label="Fullscreen"><Maximize2 size={16} /></button></div>{showLocation && <div className="operator-location"><Crosshair size={14} /> Operator location · Guwahati</div>}<div className="map-legend live-legend"><strong>MAP LEGEND</strong><span><i className="legend-green" />Active vehicle</span><span><i className="legend-yellow" />Delayed vehicle</span><span><i className="legend-red" />High risk route</span><span><i className="legend-critical" />Incident</span></div><div className="map-status-bar"><span><i /> Live Data Status <b>Connected</b></span><span>Updated <b>30 sec ago</b></span><span>Vehicles <b>128</b></span><span>Routes <b>342</b></span><span>Incidents <b>23</b></span></div></div><div className="quick-filters">{["All", "Vehicles", "Routes", "Incidents", "High Risk", "Weather", "Offline"].map(f => <button className={activeFilter === f ? "active" : ""} key={f} onClick={() => setActiveFilter(f)}>{f}</button>)}</div><div className="route-chip"><span className="route-dot" />{routes[selectedRoute]?.route}<b>{routes[selectedRoute]?.risk}% risk</b></div></div> }
+const VEHICLES_DATA = [
+  {
+    id: "NR-042",
+    x: 39,
+    y: 50,
+    status: "normal",
+    speed: "68 km/h",
+    corridor: "Bhalukpong → Itanagar (NH-13)",
+    eta: "4h 18m",
+    risk: "42%",
+    riskLevel: "Moderate Risk (42%)",
+    cargo: "Essential Medical Supplies",
+    lastUpdated: "Just now (Simulated GPS)",
+  },
+  {
+    id: "NR-073",
+    x: 66,
+    y: 67,
+    status: "delayed",
+    speed: "31 km/h",
+    corridor: "Imphal → Kohima (NH-29)",
+    eta: "6h 10m",
+    risk: "61%",
+    riskLevel: "High Risk (61%)",
+    cargo: "Fuel Tanker Convoy",
+    lastUpdated: "2 min ago (Simulated GPS)",
+  },
+  {
+    id: "NR-091",
+    x: 53,
+    y: 83,
+    status: "critical",
+    speed: "25 km/h",
+    corridor: "Silchar → Aizawl (NH-306)",
+    eta: "8h 45m",
+    risk: "78%",
+    riskLevel: "Critical Risk (78%)",
+    cargo: "Emergency Relief Packets",
+    lastUpdated: "1 min ago (Simulated GPS)",
+  },
+  {
+    id: "NR-018",
+    x: 29,
+    y: 76,
+    status: "offline",
+    speed: "0 km/h",
+    corridor: "Shillong Transit Depot",
+    eta: "Stationary",
+    risk: "15%",
+    riskLevel: "Low Risk (15%)",
+    cargo: "Standby Transport Unit",
+    lastUpdated: "14 min ago (Signal Standby)",
+  },
+];
 
-function Intelligence({ onEmergency, emergency, setPlan }: any) { const [explain, setExplain] = useState(false); return <aside className="map-intelligence"><div className="intel-heading"><div><span className="eyebrow blue">REGIONAL INTELLIGENCE</span><h2>Current transportation situation</h2></div><button className="emergency-button" onClick={onEmergency}><AlertTriangle size={14} /> {emergency ? "EMERGENCY ACTIVE" : "Emergency Mode"}</button></div><section className="intel-card accessibility-card"><div className="intel-card-title"><span><Activity size={16} /> Network Accessibility</span><span className="trend negative">↓ 3.2%</span></div><div className="access-number">82.6% <small>Moderate Impact</small></div><div className="progress-track"><i style={{ width: "82.6%" }} /></div><p>Weather-related disruptions are affecting mountain corridors.</p></section><section className="intel-card"><div className="intel-card-title"><span><Truck size={16} /> Fleet Status</span><button>View fleet <ChevronRight size={13} /></button></div><div className="intel-stats"><span><b>94</b><small>Moving</small></span><span><b>21</b><small>Delayed</small></span><span><b>5</b><small>Critical</small></span><span><b>8</b><small>Offline</small></span></div></section><section className="intel-card"><div className="intel-card-title"><span><AlertTriangle size={16} /> Active Incidents</span><button>View incidents <ChevronRight size={13} /></button></div><div className="intel-stats"><span><b className="critical-text">5</b><small>Critical</small></span><span><b className="high-text">8</b><small>High</small></span><span><b>7</b><small>Medium</small></span><span><b>3</b><small>Low</small></span></div></section><section className="intel-card risk-routes"><div className="intel-card-title"><span><RouteIcon size={16} /> High-Risk Routes</span></div>{[["Guwahati → Itanagar", 87], ["Imphal → Kohima", 61], ["Dhemaji → Dibrugarh", 58]].map(([r, risk]) => <button key={r as string} onClick={() => undefined}><span><strong>{r}</strong><small>View route</small></span><b className={Number(risk) > 70 ? "critical-text" : "high-text"}>{risk}%</b></button>)}</section><section className="intel-card weather-mini"><div className="intel-card-title"><span><CloudRain size={16} /> Weather Hazards</span><button>View weather <ChevronRight size={13} /></button></div><p><b>Heavy Rain</b><em className="critical-text">HIGH</em></p><p><b>Landslide</b><em className="critical-text">HIGH</em></p><p><b>Flood</b><em className="high-text">MODERATE</em></p><p><b>Visibility</b><em className="high-text">POOR</em></p></section><section className="intel-card ai-mini"><div className="ai-heading"><span className="ai-icon"><BrainCircuit size={17} /></span><div><h2>AI Route Recommendation</h2><small>Decision support</small></div></div><div className="ai-mini-route"><strong>Guwahati → Itanagar</strong><span><b>87%</b> current risk → <b className="risk-low">31%</b></span></div><h3><Zap size={14} /> Alternate Route B</h3><p>Current corridor shows elevated landslide and rainfall risk.</p><div className="ai-mini-actions"><button className="primary-button">View route</button><button className="outline-button" onClick={() => setExplain(true)}>Why this route?</button></div></section>{explain && <div className="explanation"><button onClick={() => setExplain(false)}><X size={14} /></button><strong>AI Decision Factors</strong><p>Heavy rainfall <b>+28%</b></p><p>Historical landslide risk <b>+24%</b></p><p>Road condition <b>+18%</b></p><p>Traffic <b>+10%</b></p><small>Alternate Route B provides a significantly lower disruption probability with an acceptable increase in travel time.</small></div>}<button className="plan-route-wide" onClick={() => setPlan(true)}><RouteIcon size={15} /> Plan a new route</button></aside> }
+const INCIDENTS_DATA = [
+  {
+    id: "INC-101",
+    x: 51,
+    y: 38,
+    type: "Landslide Blockage",
+    corridor: "NH-13 Corridor near Bomdila Pass",
+    severity: "CRITICAL",
+    risk: "87%",
+    status: "Partially Blocked (Single Lane)",
+    clearance: "~3 hours",
+    details: "Heavy rainfall triggered rock and debris flow across uphill lane. 6 convoys queued.",
+    lastUpdated: "10 min ago (Prototype Sensor)",
+    routeId: 0,
+  },
+  {
+    id: "INC-102",
+    x: 57,
+    y: 81,
+    type: "Flash Flood / River Inundation",
+    corridor: "Silchar – Hailakandi Riverway",
+    severity: "HIGH",
+    risk: "74%",
+    status: "Roadway Submerged",
+    clearance: "~5 hours",
+    details: "Barak River swell inundated 400m low-lying roadbed. Alternate highland path active.",
+    lastUpdated: "28 min ago (Prototype Report)",
+    routeId: 1,
+  },
+  {
+    id: "INC-103",
+    x: 73,
+    y: 62,
+    type: "Road Structural Damage",
+    corridor: "Kohima Pass Mountain Section",
+    severity: "MODERATE",
+    risk: "52%",
+    status: "Controlled Single-Lane Open",
+    clearance: "~2 hours",
+    details: "Shoulder erosion on hairpin bend. Heavy tonnage vehicles diverted via bypass.",
+    lastUpdated: "1 hour ago (Prototype Advisory)",
+    routeId: 2,
+  },
+];
 
-function Modal({ type, close }: { type: "emergency" | "plan"; close: () => void }) { const isEmergency = type === "emergency"; return <div className="modal-backdrop" onClick={close}><div className="compare-modal map-modal" onClick={e => e.stopPropagation()}><button className="modal-close" onClick={close}><X size={19} /></button><small className={`eyebrow ${isEmergency ? "red" : "blue"}`}>{isEmergency ? "PRIORITY OPERATIONS" : "ROUTE PLANNING"}</small><h2>{isEmergency ? "Activate Emergency Monitoring?" : "Plan New Route"}</h2>{isEmergency ? <><p className="modal-subtitle">Emergency mode prioritizes critical routes, blocked roads, disaster incidents, medical supply routes and high-risk areas.</p><ul className="modal-bullets"><li>Critical routes and emergency vehicles</li><li>Blocked roads and disaster incidents</li><li>Medical supply routes</li></ul><div className="modal-footer"><span /><div><button className="primary-button" onClick={close}>Activate</button><button className="outline-button" onClick={close}>Cancel</button></div></div></> : <><div className="form-grid"><label>Origin<select><option>Guwahati</option>{cities.map(c => <option key={c}>{c}</option>)}</select></label><label>Destination<select><option>Itanagar</option>{cities.map(c => <option key={c}>{c}</option>)}</select></label><label>Vehicle<select><option>NR-042</option>{vehicles.map(v => <option key={v.id}>{v.id}</option>)}</select></label><label>Cargo Type<select><option>Medicine</option><option>Food</option><option>Emergency Supplies</option></select></label><label>Priority<select><option>Normal</option><option>High</option><option>Emergency</option></select></label><label>Departure Time<input type="time" defaultValue="11:00" /></label></div><div className="modal-footer"><p>AI will compare road accessibility, weather and predicted risk.</p><button className="primary-button" onClick={close}>Calculate Route <ChevronRight size={15} /></button></div></>}</div></div> }
+const DEFAULT_TARGET: MapTarget = {
+  type: "incident",
+  id: INCIDENTS_DATA[0].id,
+  title: `${INCIDENTS_DATA[0].type} — ${INCIDENTS_DATA[0].corridor}`,
+  category: "HAZARD INCIDENT · CRITICAL (PROTOTYPE)",
+  location: INCIDENTS_DATA[0].corridor,
+  condition: INCIDENTS_DATA[0].details,
+  status: INCIDENTS_DATA[0].status,
+  severity: `CRITICAL (${INCIDENTS_DATA[0].risk} Disruption)`,
+  severityTone: "critical",
+  lastUpdated: INCIDENTS_DATA[0].lastUpdated,
+  details: `Estimated clearance: ${INCIDENTS_DATA[0].clearance}`,
+  linkTo: "/incidents",
+  linkText: "Inspect Incident Report",
+};
 
-export default function LiveMap() { const [collapsed, setCollapsed] = useState(false); const [mobileOpen, setMobileOpen] = useState(false); const [region, setRegion] = useState(regions[0]); const [dark, setDark] = useState(false); const [filter, setFilter] = useState("All"); const [modal, setModal] = useState<"emergency" | "plan" | null>(null); const [emergency, setEmergency] = useState(false); const filtered = useMemo(() => filter, [filter]); return <div className={dark ? "app-shell dark-mode" : "app-shell"}><Sidebar {...{ collapsed, setCollapsed, mobileOpen, setMobileOpen }} /><main className="main-shell"><Header {...{ region, setRegion, dark, setDark, setMobileOpen }} /><div className="dashboard live-dashboard"><div className="dashboard-intro"><div><span className="eyebrow blue">GIS OPERATIONS · LIVE DATA</span><h2>Regional Live Map</h2><p>Monitor vehicle movement, road accessibility, incidents and weather hazards across the North Eastern Region.</p></div><div className="date-card"><div className="date-icon"><Activity size={18} /></div><div><strong>02 September 2026</strong><span><i /> Live Monitoring</span></div></div></div><div className={`map-page-grid ${emergency ? "emergency-active" : ""}`}><section className="panel live-map-panel"><div className="panel-header"><div><h2>Live Regional GIS Map</h2><p>Leaflet / OpenStreetMap-ready monitoring surface · {filtered} view</p></div><div className="map-connect"><i /> Connected · 30 sec ago</div></div><GisMap {...{ activeFilter: filter, setActiveFilter: setFilter }} /></section><Intelligence {...{ onEmergency: () => setModal("emergency"), emergency, setPlan: () => setModal("plan") }} /></div></div></main>{modal && <Modal type={modal} close={() => { setModal(null); if (modal === "emergency") setEmergency(true); }} />}</div> }
+// ---------------------------------------------------------------------------
+// Sidebar Component
+// ---------------------------------------------------------------------------
+
+function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
+
+  const nav = [
+    ["Overview", LayoutDashboard, "/"],
+    ["Live Map", MapIcon, "/live-map"],
+    ["Vehicles", Truck, "/vehicles"],
+    ["Routes", RouteIcon, "/routes"],
+    ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
+    ["Incident Reporting", AlertTriangle, "/incidents"],
+    ["Weather & Hazards", CloudRain, "/weather-hazards"],
+    ["Alerts", Bell, "/alerts"],
+  ];
+
+  return (
+    <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+      <div className="brand">
+        <div className="brand-mark">
+          <PathnovaLogo />
+        </div>
+        <div className="brand-copy">
+          <strong>
+            <span className="path-wordmark">PATH</span>
+            <span className="nova-wordmark">NOVA</span>
+          </strong>
+        </div>
+        <button
+          className="icon-button sidebar-toggle"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+        </button>
+      </div>
+
+      <div className="mobile-close">
+        <button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+          <X size={20} />
+        </button>
+      </div>
+
+      <nav className="nav-list">
+        {nav.map(([label, Icon, href]: any) => (
+          <Link
+            key={label}
+            to={href}
+            className={`nav-item ${label === "Live Map" ? "active" : ""}`}
+            title={collapsed ? label : undefined}
+            onClick={() => setMobileOpen(false)}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+            {label === "Alerts" && <b className="nav-badge">23</b>}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="sidebar-bottom user-sidebar-bottom">
+        <div className="profile-menu">
+          <button
+            type="button"
+            className="profile"
+            onClick={() => setProfileOpen(!profileOpen)}
+            aria-expanded={profileOpen}
+          >
+            <div className="avatar">LA</div>
+            <div className="profile-copy">
+              <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
+              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+            </div>
+            <ChevronDown size={16} />
+          </button>
+          {profileOpen && (
+            <div className="profile-dropdown" role="menu">
+              <button type="button" role="menuitem" onClick={() => setProfileOpen(false)}>
+                Profile
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setLoggedOut(true);
+                  setProfileOpen(false);
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Header Component
+// ---------------------------------------------------------------------------
+
+function Header({ region, setRegion, dark, setDark, setMobileOpen }: any) {
+  const [online, setOnline] = useState(true);
+  const [todayStr] = useState(() => {
+    const d = new Date();
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  });
+
+  return (
+    <header className="topbar">
+      <div className="mobile-menu">
+        <button className="icon-button" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+          <Menu size={22} />
+        </button>
+      </div>
+      <div className="title-block">
+        <h1>Live Operational Map</h1>
+        <p>GIS telemetry and accessibility tracking across the North Eastern Region</p>
+      </div>
+      <div className="header-actions">
+        <div className="select-wrap">
+          <MapIcon size={16} />
+          <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Select region">
+            {regions.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} />
+        </div>
+        <span className="date-header">{todayStr} · GIS Feed</span>
+        <button
+          className={`system-status ${online ? "online" : "offline"}`}
+          onClick={() => setOnline(!online)}
+          aria-label="Toggle GIS telemetry status"
+        >
+          <i />
+          {online ? "Telemetry Active" : "Offline Cache"}
+        </button>
+        <button
+          className="icon-button theme-toggle"
+          onClick={() => setDark(!dark)}
+          aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {dark ? <Sun size={19} /> : <Moon size={19} />}
+        </button>
+        <div className="header-avatar">LA</div>
+      </div>
+    </header>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// In-Canvas Marker Popup
+// ---------------------------------------------------------------------------
+
+function MarkerPopup({
+  target,
+  close,
+}: {
+  target: MapTarget;
+  close: () => void;
+}) {
+  return (
+    <div className="map-popup live-popup">
+      <button onClick={close} aria-label="Close details">
+        <X size={14} />
+      </button>
+      <small className={`eyebrow ${target.type === "incident" ? "red" : "blue"}`}>
+        {target.category}
+      </small>
+      <h3 style={{ fontSize: "14px", marginTop: "4px" }}>{target.title}</h3>
+      <p style={{ fontSize: "10px", color: "#7e91a1", marginBottom: "8px" }}>{target.location}</p>
+      <div className="live-detail-list">
+        <span>
+          Status <b>{target.status}</b>
+        </span>
+        <span>
+          Severity/Risk <b>{target.severity}</b>
+        </span>
+        <span>
+          Telemetry <b>{target.lastUpdated}</b>
+        </span>
+        <span>
+          Operational Detail <b>{target.details}</b>
+        </span>
+      </div>
+      <div className="popup-actions">
+        <Link to={target.linkTo} className="popup-action" style={{ textAlign: "center", textDecoration: "none" }}>
+          {target.linkText}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Compact Map Legend (Requirement #2)
+// ---------------------------------------------------------------------------
+
+function MapLegend() {
+  return (
+    <div className="map-compact-legend">
+      <div className="legend-items-wrap">
+        <strong style={{ fontSize: "9px", color: "#4f677b", letterSpacing: "0.5px" }}>MAP LEGEND:</strong>
+        <span className="legend-item">
+          <i className="legend-dot dot-green" /> Safe / Accessible Route
+        </span>
+        <span className="legend-item">
+          <i className="legend-dot dot-yellow" /> Warning / Delayed Convoy
+        </span>
+        <span className="legend-item">
+          <i className="legend-dot dot-red" /> Critical / High Risk Corridor
+        </span>
+        <span className="legend-item">
+          <i className="legend-dot dot-incident" /> Active Hazard Incident
+        </span>
+        <span className="legend-item">
+          <i className="legend-dot dot-vehicle" /> Fleet Vehicle (Simulated)
+        </span>
+      </div>
+      <div className="legend-meta">
+        <Info size={13} />
+        <span>Prototype GIS Telemetry · NER Operational Corridors</span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Selected Target / Location Detail Panel (Requirement #4)
+// ---------------------------------------------------------------------------
+
+function SelectedTargetDetail({
+  target,
+  onClose,
+}: {
+  target: MapTarget | null;
+  onClose: () => void;
+}) {
+  if (!target) return null;
+
+  return (
+    <section className="map-selected-detail">
+      <div className="detail-head">
+        <div className="detail-title-group">
+          <div className={`detail-icon ${target.type}`}>
+            {target.type === "incident" && <AlertTriangle size={18} />}
+            {target.type === "vehicle" && <Truck size={18} />}
+            {target.type === "route" && <RouteIcon size={18} />}
+            {target.type === "city" && <MapPin size={18} />}
+          </div>
+          <div>
+            <span className={`eyebrow ${target.type === "incident" ? "red" : "blue"}`}>
+              {target.category}
+            </span>
+            <h3>{target.title}</h3>
+            <p>{target.location}</p>
+          </div>
+        </div>
+        <button className="icon-button" onClick={onClose} aria-label="Dismiss detail panel" style={{ color: "#8a9caa" }}>
+          <X size={16} />
+        </button>
+      </div>
+
+      <div className="detail-grid">
+        <div className="detail-cell">
+          <span>Corridor / Location</span>
+          <strong>{target.location}</strong>
+        </div>
+        <div className="detail-cell">
+          <span>Hazard / Condition</span>
+          <strong>{target.condition}</strong>
+        </div>
+        <div className="detail-cell">
+          <span>Operational Status</span>
+          <strong>{target.status}</strong>
+        </div>
+        <div className="detail-cell">
+          <span>Severity &amp; Risk</span>
+          <strong
+            style={{
+              color:
+                target.severityTone === "critical"
+                  ? "#d15156"
+                  : target.severityTone === "yellow"
+                  ? "#d1932a"
+                  : "#25a16b",
+            }}
+          >
+            {target.severity}
+          </strong>
+        </div>
+        <div className="detail-cell">
+          <span>Telemetry &amp; Source</span>
+          <strong>{target.lastUpdated}</strong>
+        </div>
+      </div>
+
+      <div className="detail-actions">
+        <span style={{ fontSize: "10px", color: "#8497a7", marginRight: "auto", display: "flex", alignItems: "center", gap: "5px" }}>
+          <Clock size={13} />
+          <span>Telemetry updated automatically · Prototype data</span>
+        </span>
+        <Link to={target.linkTo} className="outline-button" style={{ textDecoration: "none" }}>
+          <span>{target.linkText}</span>
+          <ExternalLink size={12} />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GIS Map Component
+// ---------------------------------------------------------------------------
+
+function GisMap({
+  activeFilter,
+  setActiveFilter,
+  selectedTarget,
+  setSelectedTarget,
+  onOpenPlanModal,
+  emergency,
+  onToggleEmergency,
+}: {
+  activeFilter: string;
+  setActiveFilter: (f: string) => void;
+  selectedTarget: MapTarget | null;
+  setSelectedTarget: (t: MapTarget | null) => void;
+  onOpenPlanModal: () => void;
+  emergency: boolean;
+  onToggleEmergency: () => void;
+}) {
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [styleOpen, setStyleOpen] = useState(false);
+  const [mapStyle, setMapStyle] = useState("Standard");
+  const [zoom, setZoom] = useState(1);
+  const [popup, setPopup] = useState<MapTarget | null>(selectedTarget);
+  const [selectedRoute, setSelectedRoute] = useState(0);
+  const [showLocation, setShowLocation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [layers, setLayers] = useState({
+    vehicles: true,
+    routes: true,
+    incidents: true,
+    risk: true,
+    districts: true,
+  });
+
+  const toggleLayer = (key: keyof typeof layers) =>
+    setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // Filter markers based on quick filter & search
+  const visibleVehicles = useMemo(() => {
+    if (!layers.vehicles) return [];
+    return VEHICLES_DATA.filter((v) => {
+      if (activeFilter === "Incidents") return false;
+      if (activeFilter === "Weather") return false;
+      if (activeFilter === "Offline" && v.status !== "offline") return false;
+      if (activeFilter === "High Risk" && v.riskLevel.indexOf("Critical") === -1 && v.riskLevel.indexOf("High") === -1)
+        return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return v.id.toLowerCase().includes(q) || v.corridor.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [layers.vehicles, activeFilter, searchQuery]);
+
+  const visibleIncidents = useMemo(() => {
+    if (!layers.incidents) return [];
+    return INCIDENTS_DATA.filter((inc) => {
+      if (activeFilter === "Vehicles" || activeFilter === "Offline") return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return inc.type.toLowerCase().includes(q) || inc.corridor.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [layers.incidents, activeFilter, searchQuery]);
+
+  const visibleCities = useMemo(() => {
+    if (!layers.districts) return [];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return NER_CITIES.filter((c) => c.name.toLowerCase().includes(q) || c.state.toLowerCase().includes(q));
+    }
+    return NER_CITIES;
+  }, [layers.districts, searchQuery]);
+
+  const handleSelectVehicle = (v: typeof VEHICLES_DATA[0]) => {
+    const target: MapTarget = {
+      type: "vehicle",
+      id: v.id,
+      title: `Convoy Unit ${v.id} (${v.cargo})`,
+      category: "FLEET VEHICLE · EN ROUTE (SIMULATED)",
+      location: v.corridor,
+      condition: `Speed: ${v.speed} · ETA: ${v.eta}`,
+      status: v.status === "normal" ? "On Schedule" : v.status === "delayed" ? "Delayed in Mountain Pass" : v.status,
+      severity: v.riskLevel,
+      severityTone: v.status === "normal" ? "green" : v.status === "delayed" ? "yellow" : "critical",
+      lastUpdated: v.lastUpdated,
+      details: `Active telemetry node: ${v.id}`,
+      linkTo: "/vehicles",
+      linkText: "Inspect Vehicle Telemetry",
+    };
+    setSelectedTarget(target);
+    setPopup(target);
+  };
+
+  const handleSelectIncident = (inc: typeof INCIDENTS_DATA[0]) => {
+    const target: MapTarget = {
+      type: "incident",
+      id: inc.id,
+      title: `${inc.type} — ${inc.corridor}`,
+      category: "HAZARD INCIDENT · CRITICAL (PROTOTYPE)",
+      location: inc.corridor,
+      condition: inc.details,
+      status: inc.status,
+      severity: `${inc.severity} (${inc.risk} Disruption)`,
+      severityTone: inc.severity === "CRITICAL" ? "critical" : "yellow",
+      lastUpdated: inc.lastUpdated,
+      details: `Estimated clearance time: ${inc.clearance}`,
+      linkTo: "/incidents",
+      linkText: "Inspect Incident Report",
+    };
+    setSelectedTarget(target);
+    setPopup(target);
+  };
+
+  const handleSelectRoute = (routeIdx: number) => {
+    setSelectedRoute(routeIdx);
+    const r = routes[routeIdx];
+    if (!r) return;
+    const target: MapTarget = {
+      type: "route",
+      id: `ROUTE-${routeIdx}`,
+      title: `Corridor: ${r.route}`,
+      category: "TRANSIT CORRIDOR · LOGISTICS ROUTE",
+      location: `Corridor Distance: ${r.distance}`,
+      condition: `Weather: ${r.condition} · ETA: ${r.eta}`,
+      status: r.status,
+      severity: `${r.risk}% Disruption Risk`,
+      severityTone: r.risk > 70 ? "critical" : r.risk > 40 ? "yellow" : "green",
+      lastUpdated: "Simulated Model Telemetry",
+      details: `Corridor status: ${r.status}`,
+      linkTo: "/routes",
+      linkText: "Inspect Corridor Analysis",
+    };
+    setSelectedTarget(target);
+    setPopup(target);
+  };
+
+  const handleSelectCity = (c: typeof NER_CITIES[0]) => {
+    const target: MapTarget = {
+      type: "city",
+      id: `CITY-${c.name}`,
+      title: `${c.name} Logistics Hub`,
+      category: "REGIONAL HUB · DISPATCH NODE",
+      location: `${c.state}, North Eastern Region`,
+      condition: c.role,
+      status: "Operational Dispatch Hub",
+      severity: "Hub Normal",
+      severityTone: "green",
+      lastUpdated: "Connected to Regional GIS",
+      details: "Regional monitoring station active",
+      linkTo: "/live-map",
+      linkText: "Set Map Center",
+    };
+    setSelectedTarget(target);
+    setPopup(target);
+  };
+
+  return (
+    <div className="gis-wrap">
+      {/* Top Map Toolbar */}
+      <div className="map-toolbar">
+        <div className="map-toolbar-left">
+          <label className="map-search">
+            <Search size={16} />
+            <input
+              placeholder="Search city, route, or vehicle..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search map items"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                style={{ border: 0, background: "transparent", color: "#8a98aa", padding: 0 }}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </label>
+
+          <button className="outline-button" onClick={onOpenPlanModal}>
+            <RouteIcon size={14} /> Plan Route
+          </button>
+
+          {/* Layers Dropdown */}
+          <div className="map-tool-menu">
+            <button className="outline-button" onClick={() => setLayersOpen(!layersOpen)}>
+              <Layers3 size={14} /> Layers
+            </button>
+            {layersOpen && (
+              <div className="gis-menu">
+                <strong>Map Layers</strong>
+                {[
+                  ["vehicles", "Vehicles (Fleet)"],
+                  ["routes", "Primary Routes"],
+                  ["incidents", "Incident Markers"],
+                  ["risk", "Hazard Risk Zones"],
+                  ["districts", "City/District Nodes"],
+                ].map(([key, label]) => (
+                  <label key={key}>
+                    <input
+                      type="checkbox"
+                      checked={layers[key as keyof typeof layers]}
+                      onChange={() => toggleLayer(key as keyof typeof layers)}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Style Dropdown */}
+          <div className="map-tool-menu">
+            <button className="outline-button" onClick={() => setStyleOpen(!styleOpen)}>
+              <MapIcon size={14} /> {mapStyle}
+            </button>
+            {styleOpen && (
+              <div className="gis-menu style-menu">
+                {["Standard", "Satellite", "Terrain"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setMapStyle(s);
+                      setStyleOpen(false);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="map-toolbar-right">
+          <button
+            className={`emergency-button ${emergency ? "active" : ""}`}
+            onClick={onToggleEmergency}
+            title="Toggle priority emergency corridor monitoring"
+          >
+            <ShieldAlert size={14} />
+            {emergency ? "EMERGENCY PRIORITY ACTIVE" : "Emergency Mode"}
+          </button>
+        </div>
+      </div>
+
+      {/* Map Canvas */}
+      <div className={`live-map-canvas ${mapStyle.toLowerCase()}`}>
+        <div className="map-grid" style={{ transform: `scale(${zoom})` }}>
+          <div className="district-lines" />
+          <div className="region-shape" />
+
+          {/* SVG Routes */}
+          <svg className="routes-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {layers.routes && (
+              <>
+                <path
+                  d="M20 73 C32 62 39 40 47 29 S63 50 70 76"
+                  className={`route-line route-red ${selectedRoute === 0 ? "route-selected" : ""}`}
+                  onClick={() => handleSelectRoute(0)}
+                >
+                  <title>Guwahati → Itanagar (NH-13)</title>
+                </path>
+                <path
+                  d="M21 73 C33 79 56 79 70 76"
+                  className={`route-line route-green ${selectedRoute === 1 ? "route-selected" : ""}`}
+                  onClick={() => handleSelectRoute(1)}
+                >
+                  <title>Guwahati → Shillong → Imphal</title>
+                </path>
+                <path
+                  d="M47 29 C52 49 58 65 70 76"
+                  className={`route-line route-yellow ${selectedRoute === 2 ? "route-selected" : ""}`}
+                  onClick={() => handleSelectRoute(2)}
+                >
+                  <title>Itanagar → Imphal Corridor</title>
+                </path>
+                <path d="M20 73 C39 59 57 45 70 76" className="route-line route-alt">
+                  <title>Alternate Route</title>
+                </path>
+              </>
+            )}
+          </svg>
+
+          {/* Cities / Regional Nodes */}
+          {visibleCities.map((p) => (
+            <div
+              className="city"
+              key={p.name}
+              style={{ left: `${p.x}%`, top: `${p.y}%`, cursor: "pointer" }}
+              onClick={() => handleSelectCity(p)}
+              title={`${p.name} (${p.state})`}
+            >
+              <i />
+              {p.name}
+            </div>
+          ))}
+
+          {/* Hazard Risk Zones */}
+          {layers.risk && (
+            <>
+              <div className="risk-zone zone-one" title="High Landslide Vulnerability Zone" />
+              <div className="risk-zone zone-two" title="Moderate Flood Risk Plain" />
+            </>
+          )}
+
+          {/* Vehicle Markers */}
+          {visibleVehicles.map((v) => (
+            <button
+              key={v.id}
+              className={`marker vehicle-marker ${v.status}`}
+              style={{ left: `${v.x}%`, top: `${v.y}%` }}
+              onClick={() => handleSelectVehicle(v)}
+              aria-label={`Vehicle ${v.id}`}
+              title={`Vehicle ${v.id} (${v.status})`}
+            >
+              <Truck size={13} />
+            </button>
+          ))}
+
+          {/* Incident Markers */}
+          {visibleIncidents.map((inc) => (
+            <button
+              key={inc.id}
+              className="marker incident-marker"
+              style={{ left: `${inc.x}%`, top: `${inc.y}%` }}
+              onClick={() => handleSelectIncident(inc)}
+              aria-label={inc.type}
+              title={`${inc.type} - ${inc.corridor}`}
+            >
+              <AlertTriangle size={14} />
+            </button>
+          ))}
+        </div>
+
+        {/* Floating Marker Popup */}
+        {popup && <MarkerPopup target={popup} close={() => setPopup(null)} />}
+
+        {/* Map Control Buttons */}
+        <div className="map-controls">
+          <button onClick={() => setZoom((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))} aria-label="Zoom in">
+            <Plus size={16} />
+          </button>
+          <button onClick={() => setZoom((z) => Math.max(0.8, Number((z - 0.1).toFixed(1))))} aria-label="Zoom out">
+            <Minus size={16} />
+          </button>
+          <button onClick={() => setShowLocation(!showLocation)} aria-label="Toggle operator location">
+            <Crosshair size={16} />
+          </button>
+          <button onClick={() => setZoom(1)} aria-label="Reset zoom">
+            <Maximize2 size={16} />
+          </button>
+        </div>
+
+        {/* Operator Location Chip */}
+        {showLocation && (
+          <div className="operator-location">
+            <Crosshair size={14} /> Operator location · Guwahati Operations Command
+          </div>
+        )}
+
+        {/* Selected Route Chip */}
+        <div className="route-chip" onClick={() => handleSelectRoute(selectedRoute)}>
+          <span className="route-dot" />
+          {routes[selectedRoute]?.route}
+          <b>{routes[selectedRoute]?.risk}% disruption risk</b>
+        </div>
+
+        {/* Canvas Bottom Status Bar */}
+        <div className="map-status-bar">
+          <span>
+            <i /> GIS Telemetry: <b>Active (Simulated Prototype)</b>
+          </span>
+          <span>
+            Updated <b>30 sec ago</b>
+          </span>
+          <span>
+            Fleet <b>128 vehicles</b>
+          </span>
+          <span>
+            Monitored Corridors <b>342</b>
+          </span>
+          <span>
+            Hazards <b>23</b>
+          </span>
+        </div>
+      </div>
+
+      {/* Compact Quick Filters (Requirement #5) */}
+      <div className="quick-filters">
+        <span className="quick-filters-label">Filters:</span>
+        {["All", "Vehicles", "Routes", "Incidents", "High Risk", "Weather", "Offline"].map((f) => (
+          <button
+            className={activeFilter === f ? "active" : ""}
+            key={f}
+            onClick={() => setActiveFilter(f)}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {/* Compact Legend Bar (Requirement #2) */}
+      <MapLegend />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Route Planning & Emergency Modal
+// ---------------------------------------------------------------------------
+
+function Modal({ type, close }: { type: "emergency" | "plan"; close: () => void }) {
+  const isEmergency = type === "emergency";
+  return (
+    <div className="modal-backdrop" onClick={close}>
+      <div className="compare-modal map-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={close} aria-label="Close modal">
+          <X size={19} />
+        </button>
+        <small className={`eyebrow ${isEmergency ? "red" : "blue"}`}>
+          {isEmergency ? "PRIORITY OPERATIONS" : "CORRIDOR ROUTE PLANNING"}
+        </small>
+        <h2>{isEmergency ? "Activate Emergency Mode?" : "Plan Operations Route"}</h2>
+        {isEmergency ? (
+          <>
+            <p className="modal-subtitle">
+              Emergency mode prioritizes critical supply corridors, disaster response convoys, and automated bypass routing.
+            </p>
+            <ul className="modal-bullets">
+              <li>High-priority relief supplies and emergency logistics</li>
+              <li>Hazard alerts across blocked and partially closed corridors</li>
+              <li>Real-time rerouting around high-vulnerability mountain passes</li>
+            </ul>
+            <div className="modal-footer">
+              <span />
+              <div>
+                <button className="primary-button" onClick={close}>
+                  Activate Mode
+                </button>
+                <button className="outline-button" onClick={close}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="form-grid">
+              <label>
+                Origin Hub
+                <select defaultValue="Guwahati">
+                  {NER_CITIES.map((c) => (
+                    <option key={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Destination Terminal
+                <select defaultValue="Itanagar">
+                  {NER_CITIES.map((c) => (
+                    <option key={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Convoy Unit
+                <select defaultValue="NR-042">
+                  {VEHICLES_DATA.map((v) => (
+                    <option key={v.id}>{v.id} ({v.cargo})</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Cargo Classification
+                <select defaultValue="Medicine">
+                  <option>Medicine &amp; Relief</option>
+                  <option>Food Supplies</option>
+                  <option>Heavy Freight</option>
+                  <option>Fuel Tanker</option>
+                </select>
+              </label>
+              <label>
+                Priority Class
+                <select defaultValue="High">
+                  <option>Normal Operational</option>
+                  <option>High Priority</option>
+                  <option>Emergency Transit</option>
+                </select>
+              </label>
+              <label>
+                Departure Window
+                <input type="time" defaultValue="11:00" />
+              </label>
+            </div>
+            <div className="modal-footer">
+              <p>AI evaluates terrain vulnerability, weather hazards, and elevation grades to recommend optimal routes.</p>
+              <button className="primary-button" onClick={close}>
+                Calculate Optimal Corridor <ChevronRight size={15} />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Live Map Screen
+// ---------------------------------------------------------------------------
+
+export default function LiveMap() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [region, setRegion] = useState(regions[0]);
+  const [dark, setDark] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const [modal, setModal] = useState<"emergency" | "plan" | null>(null);
+  const [emergency, setEmergency] = useState(false);
+
+  // Selected target for compact operational detail panel
+  const [selectedTarget, setSelectedTarget] = useState<MapTarget | null>(DEFAULT_TARGET);
+
+  return (
+    <div className={dark ? "app-shell dark-mode" : "app-shell"}>
+      <Sidebar {...{ collapsed, setCollapsed, mobileOpen, setMobileOpen }} />
+
+      <main className="main-shell">
+        <Header {...{ region, setRegion, dark, setDark, setMobileOpen }} />
+
+        <div className="dashboard live-dashboard">
+          {/* Header Intro */}
+          <div className="dashboard-intro">
+            <div>
+              <span className="eyebrow blue">GIS OPERATIONS · NER LOGISTICS NETWORK</span>
+              <h2>Regional Live Map</h2>
+              <p>
+                Visual operational monitoring for vehicle convoys, road accessibility, and hazard risks across the North Eastern Region.
+              </p>
+            </div>
+            <div className="date-card">
+              <div className="date-icon">
+                <Activity size={18} />
+              </div>
+              <div>
+                <strong>Prototype GIS View</strong>
+                <span>
+                  <i /> Simulated Telemetry
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Desired Page Structure:
+              1. Compact map toolbar & filters
+              2. Large operational map
+              3. Compact legend
+              4. Selected location / incident detail */}
+          <div className={`map-page-grid ${emergency ? "emergency-active" : ""}`}>
+            {/* Full-width Operational Map Panel */}
+            <section className="panel live-map-panel">
+              <div className="panel-header">
+                <div>
+                  <h2>Live Regional Operational Map</h2>
+                  <p>OpenStreetMap-aligned GIS surface · Active View: {filter}</p>
+                </div>
+                <div className="map-connect">
+                  <i /> Connected · Simulated Telemetry
+                </div>
+              </div>
+
+              <GisMap
+                activeFilter={filter}
+                setActiveFilter={setFilter}
+                selectedTarget={selectedTarget}
+                setSelectedTarget={setSelectedTarget}
+                onOpenPlanModal={() => setModal("plan")}
+                emergency={emergency}
+                onToggleEmergency={() => setEmergency(!emergency)}
+              />
+            </section>
+
+            {/* Selected Location / Incident Detail (Requirement #4) */}
+            <SelectedTargetDetail
+              target={selectedTarget}
+              onClose={() => setSelectedTarget(null)}
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* Modals */}
+      {modal && (
+        <Modal
+          type={modal}
+          close={() => {
+            setModal(null);
+            if (modal === "emergency") setEmergency(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
