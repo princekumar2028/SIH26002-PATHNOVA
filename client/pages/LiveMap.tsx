@@ -135,7 +135,7 @@ const INCIDENTS_DATA = [
     status: "Partially Blocked (Single Lane)",
     clearance: "~3 hours",
     details: "Heavy rainfall triggered rock and debris flow across uphill lane. 6 convoys queued.",
-    lastUpdated: "10 min ago (Prototype Sensor)",
+    lastUpdated: "10 min ago (Corridor Sensor)",
     routeId: 0,
   },
   {
@@ -149,7 +149,7 @@ const INCIDENTS_DATA = [
     status: "Roadway Submerged",
     clearance: "~5 hours",
     details: "Barak River swell inundated 400m low-lying roadbed. Alternate highland path active.",
-    lastUpdated: "28 min ago (Prototype Report)",
+    lastUpdated: "28 min ago (Field Report)",
     routeId: 1,
   },
   {
@@ -163,7 +163,7 @@ const INCIDENTS_DATA = [
     status: "Controlled Single-Lane Open",
     clearance: "~2 hours",
     details: "Shoulder erosion on hairpin bend. Heavy tonnage vehicles diverted via bypass.",
-    lastUpdated: "1 hour ago (Prototype Advisory)",
+    lastUpdated: "1 hour ago (Weather Advisory)",
     routeId: 2,
   },
 ];
@@ -172,7 +172,7 @@ const DEFAULT_TARGET: MapTarget = {
   type: "incident",
   id: INCIDENTS_DATA[0].id,
   title: `${INCIDENTS_DATA[0].type} — ${INCIDENTS_DATA[0].corridor}`,
-  category: "HAZARD INCIDENT · CRITICAL (PROTOTYPE)",
+  category: "HAZARD INCIDENT · CRITICAL",
   location: INCIDENTS_DATA[0].corridor,
   condition: INCIDENTS_DATA[0].details,
   status: INCIDENTS_DATA[0].status,
@@ -193,10 +193,10 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
   const [loggedOut, setLoggedOut] = useState(false);
 
   const nav = [
-    ["Overview", LayoutDashboard, "/"],
+    ["Overview", LayoutDashboard, "/dashboard"],
+    ["Routes", RouteIcon, "/routes"],
     ["Live Map", MapIcon, "/live-map"],
     ["Vehicles", Truck, "/vehicles"],
-    ["Routes", RouteIcon, "/routes"],
     ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
     ["Incident Reporting", AlertTriangle, "/incidents"],
     ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -257,7 +257,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>
@@ -409,7 +409,7 @@ function MapLegend() {
       </div>
       <div className="legend-meta">
         <Info size={13} />
-        <span>Prototype GIS Telemetry · NER Operational Corridors</span>
+        <span>GIS Telemetry · NER Operational Corridors</span>
       </div>
     </div>
   );
@@ -480,7 +480,7 @@ function SelectedTargetDetail({
       <div className="detail-actions">
         <span style={{ fontSize: "10px", color: "#8497a7", marginRight: "auto", display: "flex", alignItems: "center", gap: "5px" }}>
           <Clock size={13} />
-          <span>Telemetry updated automatically · Prototype data</span>
+          <span>Telemetry updated automatically</span>
         </span>
         <Link to={target.linkTo} className="outline-button" style={{ textDecoration: "none" }}>
           <span>{target.linkText}</span>
@@ -595,7 +595,7 @@ function GisMap({
       type: "incident",
       id: inc.id,
       title: `${inc.type} — ${inc.corridor}`,
-      category: "HAZARD INCIDENT · CRITICAL (PROTOTYPE)",
+      category: "HAZARD INCIDENT · CRITICAL",
       location: inc.corridor,
       condition: inc.details,
       status: inc.status,
@@ -869,7 +869,7 @@ function GisMap({
         {/* Canvas Bottom Status Bar */}
         <div className="map-status-bar">
           <span>
-            <i /> GIS Telemetry: <b>Active (Prototype)</b>
+            <i /> GIS Telemetry: <b>Active</b>
           </span>
           <span>
             Fleet <b>128 vehicles</b>

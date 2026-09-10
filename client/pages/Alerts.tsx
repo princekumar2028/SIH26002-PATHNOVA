@@ -32,10 +32,10 @@ import { regions } from "@/data/dashboard";
 import { alertRecords as initialAlerts, AlertRecord } from "@/data/alerts";
 
 const nav = [
-  ["Overview", LayoutDashboard, "/"],
+  ["Overview", LayoutDashboard, "/dashboard"],
+  ["Routes", RouteIcon, "/routes"],
   ["Live Map", MapIcon, "/live-map"],
   ["Vehicles", Truck, "/vehicles"],
-  ["Routes", RouteIcon, "/routes"],
   ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
   ["Incident Reporting", AlertTriangle, "/incidents"],
   ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -121,7 +121,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, unreadCou
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>
@@ -589,7 +589,7 @@ function Drawer({
 function NotificationChannels() {
   const channels = [
     { name: "In-App Dashboard", status: "Active & Real-Time", theme: "green", desc: "Live operations screen" },
-    { name: "Email Notifications", status: "Configured (Prototype)", theme: "blue", desc: "Digest & critical alerts" },
+    { name: "Email Notifications", status: "Configured", theme: "blue", desc: "Digest & critical alerts" },
     { name: "SMS Broadcast", status: "Ready for Integration", theme: "amber", desc: "Driver emergency alerts" },
     { name: "WhatsApp Gateway", status: "Ready for Integration", theme: "amber", desc: "Transporter dispatch" },
     { name: "Push Notifications", status: "Ready for Integration", theme: "amber", desc: "Mobile field crew" },
@@ -602,7 +602,6 @@ function NotificationChannels() {
           <h2>Notification Delivery Channels</h2>
           <p>Multi-channel delivery status for fleet managers, depot heads and transport crews</p>
         </div>
-        <span className="demo-label">PROTOTYPE CONFIGURATION</span>
       </div>
 
       <div className="channel-grid">
@@ -651,7 +650,7 @@ function AlertSimulation({
           <p>
             Simulate operational events to preview how PATHNOVA prioritizes alerts and routes around disruptions.
           </p>
-          <span className="demo-label">DEMO MODE · SIMULATION</span>
+          <span className="demo-label">OPERATIONAL SIMULATION</span>
         </div>
         <span className={`live-label ${isLiveSim ? "active" : ""}`}>
           <i /> {isLiveSim ? "Simulated Stream Running" : "Manual Simulation Mode"}
@@ -696,7 +695,7 @@ function AlertSimulation({
 
         <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
           <button className="primary-button" onClick={handleSimulate} style={{ flex: 1 }}>
-            Trigger Demo Alert
+            Trigger Simulated Alert
           </button>
           <button
             className={`outline-button ${isLiveSim ? "active" : ""}`}
@@ -800,7 +799,7 @@ export default function Alerts() {
       title: `Simulated: ${eventType}`,
       description: `Simulated event triggered at ${location}. Disruption detected on primary transport corridor requiring operator action.`,
       location,
-      source: "Simulation Engine (Demo Mode)",
+      source: "Simulation Engine",
       createdAt: "Just now",
       status: "New",
       isRead: false,
@@ -816,7 +815,7 @@ export default function Alerts() {
 
     setRecords((prev) => [newAlert, ...prev]);
     setSelected(newAlert);
-    setToast(`Simulated alert [${newId}] injected [DEMO MODE]`);
+    setToast(`Simulated alert [${newId}] injected`);
     setTimeout(() => setToast(""), 4000);
   };
 

@@ -36,10 +36,10 @@ import { useWeather } from "@/hooks/use-weather";
 
 /* ─── Navigation ─── */
 const navItems = [
-  ["Overview", LayoutDashboard, "/"],
+  ["Overview", LayoutDashboard, "/dashboard"],
+  ["Routes", RouteIcon, "/routes"],
   ["Live Map", MapIcon, "/live-map"],
   ["Vehicles", Truck, "/vehicles"],
-  ["Routes", RouteIcon, "/routes"],
   ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
   ["Incident Reporting", AlertTriangle, "/incidents"],
   ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -129,7 +129,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
       <nav className="nav-list">
         {navItems.map(([label, Icon, href]: any) => {
           const isActive =
-            href === "/"
+            href === "/dashboard"
               ? location.pathname === "/" || location.pathname === "/dashboard"
               : location.pathname.startsWith(href);
 
@@ -159,12 +159,26 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>
           {profileOpen && (
             <div className="profile-dropdown" role="menu">
+              <Link
+                to="/driver"
+                role="menuitem"
+                style={{ display: "block", width: "100%", padding: "8px 10px", textDecoration: "none", color: "#1a6f69", fontWeight: 600, fontSize: "10px" }}
+              >
+                🚚 Driver Portal →
+              </Link>
+              <Link
+                to="/"
+                role="menuitem"
+                style={{ display: "block", width: "100%", padding: "8px 10px", textDecoration: "none", color: "#64748b", fontSize: "10px" }}
+              >
+                ⇋ Switch Role / Landing
+              </Link>
               <button
                 type="button"
                 role="menuitem"
@@ -241,6 +255,16 @@ function Header({
         <span className="system-status online hidden sm:inline-flex">
           <i /> System Operational
         </span>
+
+        <Link
+          to="/driver"
+          className="header-driver-switch hidden sm:inline-flex"
+          id="header-driver-switch"
+          title="Switch to Driver Portal"
+        >
+          <Truck size={14} />
+          <span>Driver Portal →</span>
+        </Link>
 
         <div className="relative">
           <button
@@ -347,7 +371,7 @@ function RegionalOperationalSummary() {
           </div>
         </div>
         <span className="live-label">
-          <i /> Prototype Real-Time Snapshot
+          <i /> Real-Time Network Snapshot
         </span>
       </div>
 
@@ -938,7 +962,7 @@ function QuickNavigation() {
     },
     {
       title: "Operational Alerts",
-      desc: "Triage center, acknowledgment workflow and demo simulation",
+      desc: "Triage center, acknowledgment workflow and alert simulation",
       Icon: Bell,
       href: "/alerts",
       color: "orange",
@@ -952,7 +976,6 @@ function QuickNavigation() {
           <h2>Module Quick Navigation</h2>
           <p>Direct operational access to all specialized PATHNOVA intelligence screens</p>
         </div>
-        <span className="demo-label">SIH 2026 PROTOTYPE</span>
       </div>
 
       <div style={{ padding: "0 20px 20px" }}>

@@ -28,10 +28,10 @@ import { regions } from "@/data/dashboard";
 import { routeOptions, riskFactors, RouteOption } from "@/data/routes";
 
 const nav = [
-  ["Overview", LayoutDashboard, "/"],
+  ["Overview", LayoutDashboard, "/dashboard"],
+  ["Routes", RouteIcon, "/routes"],
   ["Live Map", MapIcon, "/live-map"],
   ["Vehicles", Truck, "/vehicles"],
-  ["Routes", RouteIcon, "/routes"],
   ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
   ["Incident Reporting", AlertTriangle, "/incidents"],
   ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -108,7 +108,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>

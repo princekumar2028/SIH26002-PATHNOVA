@@ -48,10 +48,10 @@ const NER_LOCATIONS = [
 const weatherRegions = regions.slice(1);
 
 const nav: [string, any, string][] = [
-  ["Overview", LayoutDashboard, "/"],
+  ["Overview", LayoutDashboard, "/dashboard"],
+  ["Routes", RouteIcon, "/routes"],
   ["Live Map", MapIcon, "/live-map"],
   ["Vehicles", Truck, "/vehicles"],
-  ["Routes", RouteIcon, "/routes"],
   ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
   ["Incident Reporting", AlertTriangle, "/incidents"],
   ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -115,7 +115,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>
@@ -526,7 +526,7 @@ function AiRecommendation() {
         </div>
       </div>
       <div>
-        <span className="status-pill bg-red-50 text-red-700">DECISION SUPPORT PROTOTYPE</span>
+        <span className="status-pill bg-red-50 text-red-700">DECISION SUPPORT ADVISORY</span>
         <Link to="/routes" className="primary-button">View alternate route <ChevronRight size={14} /></Link>
         <button
           className="outline-button"
@@ -595,9 +595,8 @@ export default function WeatherHazards() {
           {/* 5. AI Recommendation */}
           <AiRecommendation />
 
-          {/* Transparent Prototype Disclaimer */}
           <p className="mock-disclaimer">
-            Live weather is powered in real-time by WeatherAPI.com. Hazard assessments and routing recommendations are decision-support prototype heuristics.
+            Live weather is powered in real-time by WeatherAPI.com. Hazard assessments and routing recommendations are decision-support automated heuristics.
           </p>
         </div>
       </main>

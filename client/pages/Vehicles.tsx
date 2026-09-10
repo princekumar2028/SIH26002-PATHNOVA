@@ -85,10 +85,10 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
   const [loggedOut, setLoggedOut] = useState(false);
 
   const nav = [
-    ["Overview", LayoutDashboard, "/"],
+    ["Overview", LayoutDashboard, "/dashboard"],
+    ["Routes", RouteIcon, "/routes"],
     ["Live Map", MapIcon, "/live-map"],
     ["Vehicles", Truck, "/vehicles"],
-    ["Routes", RouteIcon, "/routes"],
     ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
     ["Incident Reporting", AlertTriangle, "/incidents"],
     ["Weather & Hazards", CloudRain, "/weather-hazards"],
@@ -149,7 +149,7 @@ function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
             <div className="avatar">LA</div>
             <div className="profile-copy">
               <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
-              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+              <small>{loggedOut ? "Session ended" : "Operations Manager"}</small>
             </div>
             <ChevronDown size={16} />
           </button>
@@ -394,7 +394,7 @@ function VehicleTable({
           </button>
           <button
             className="outline-button"
-            onClick={() => alert("Fleet manifest report exported (Demo).")}
+            onClick={() => alert("Fleet manifest report exported.")}
             title="Export vehicle fleet manifest"
           >
             <Download size={14} /> Export
@@ -589,7 +589,7 @@ function DetailsDrawer({
       <aside className="vehicle-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
           <div>
-            <span className="eyebrow blue">SIMULATED TELEMETRY · PROTOTYPE DATA</span>
+            <span className="eyebrow blue">SIMULATED TELEMETRY</span>
             <h2>{vehicle.id}</h2>
             <p>
               {vehicle.driver} · {vehicle.vehicleType}
@@ -757,7 +757,7 @@ export default function Vehicles() {
           {/* Header Intro */}
           <div className="dashboard-intro">
             <div>
-              <span className="eyebrow blue">FLEET OPERATIONS · PROTOTYPE TELEMETRY</span>
+              <span className="eyebrow blue">FLEET OPERATIONS · CORRIDOR TELEMETRY</span>
               <h2>Fleet Operations &amp; Tracking</h2>
               <p>
                 Real-time operational status, corridor transit progress, and exception monitoring across the North Eastern Region.

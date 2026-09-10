@@ -1,0 +1,1019 @@
+/* ═══════════════════════════════════════════════════════════════
+   PATHNOVA — ROLE SELECT & DRIVER PORTAL STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── ROLE SELECT (/ landing screen) ─── */
+.role-select-root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #081524;
+  position: relative;
+  overflow: hidden;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #e6edf5;
+  padding: 32px 20px;
+}
+
+.role-select-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(47, 143, 139, 0.22), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(33, 94, 175, 0.18), transparent 70%),
+    linear-gradient(180deg, #071321 0%, #0c1c2e 100%);
+  pointer-events: none;
+}
+
+.role-select-content {
+  position: relative;
+  z-index: 2;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.role-select-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.role-select-logo {
+  margin-bottom: 12px;
+  display: inline-flex;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.role-select-wordmark {
+  font-family: "Manrope", sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.role-select-wordmark .path-wordmark {
+  color: #ffffff;
+}
+
+.role-select-wordmark .nova-wordmark {
+  background: linear-gradient(105deg, #54c5bd 0%, #63b978 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.role-select-tagline {
+  color: #92a4b8;
+  font-size: 14px;
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.role-select-heading {
+  font-family: "Manrope", sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  margin: 10px 0 36px;
+}
+
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.role-card {
+  background: linear-gradient(180deg, #102339 0%, #0d1e31 100%);
+  border: 1px solid #1f3956;
+  border-radius: 16px;
+  padding: 32px 26px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  position: relative;
+  overflow: hidden;
+  color: inherit;
+}
+
+.role-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2570b5;
+  opacity: 0.6;
+  transition: opacity 0.22s ease;
+}
+
+.role-card--driver::before {
+  background: linear-gradient(90deg, #2f8f8b, #44b7a1);
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  border-color: #3b6b98;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.role-card--driver:hover {
+  border-color: #3ca99e;
+  box-shadow: 0 16px 40px rgba(47, 143, 139, 0.25);
+}
+
+.role-card:hover::before {
+  opacity: 1;
+}
+
+.role-card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #18314e;
+  color: #55a3eb;
+  margin-bottom: 20px;
+  border: 1px solid #23476d;
+}
+
+.role-card--driver .role-card-icon {
+  background: #133939;
+  color: #49c5b6;
+  border-color: #1f5451;
+}
+
+.role-card-body {
+  flex: 1;
+  width: 100%;
+}
+
+.role-card-title {
+  display: block;
+  font-family: "Manrope", sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.role-card-desc {
+  display: block;
+  color: #8da2ba;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.role-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-card-features li {
+  font-size: 13px;
+  color: #b7c7d8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-card-features li::before {
+  content: "✓";
+  color: #38bdf8;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.role-card--driver .role-card-features li::before {
+  color: #34d399;
+}
+
+.role-card-cta {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  background: #1c3d61;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #2d5b8c;
+  transition: background 0.18s ease;
+}
+
+.role-card:hover .role-card-cta {
+  background: #235284;
+}
+
+.role-card--driver .role-card-cta {
+  background: #18504d;
+  border-color: #247570;
+}
+
+.role-card--driver:hover .role-card-cta {
+  background: #1e6662;
+}
+
+.role-select-footer {
+  color: #647a92;
+  font-size: 12px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .role-cards {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+}
+
+/* ─── DRIVER PORTAL (/driver) ─── */
+.driver-root {
+  min-height: 100vh;
+  background: #091726;
+  color: #f0f4f8;
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 84px; /* Space for bottom nav */
+}
+
+/* Header */
+.driver-header {
+  background: #0d2138;
+  border-bottom: 1px solid #1a3656;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
+}
+
+.driver-back-btn {
+  background: #142a44;
+  border: 1px solid #22436b;
+  color: #cbd8e5;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.driver-back-btn:hover {
+  background: #1e3d64;
+  color: #fff;
+}
+
+.driver-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.driver-header-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: "Manrope", sans-serif;
+}
+
+.driver-header-path {
+  font-weight: 800;
+  color: #fff;
+  font-size: 15px;
+}
+
+.driver-header-nova {
+  font-weight: 800;
+  color: #55c8cc;
+  font-size: 15px;
+}
+
+.driver-header-portal {
+  font-size: 11px;
+  color: #92a7bc;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #152d47;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #204166;
+}
+
+.driver-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.driver-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #14324f;
+  border: 1px solid #20476e;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7dd3fc;
+}
+
+/* Identity Strip */
+.driver-identity-strip {
+  background: #0f2742;
+  border-bottom: 1px solid #1a395c;
+  padding: 9px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.driver-identity-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.driver-identity-label {
+  color: #7c94ac;
+  font-size: 11px;
+}
+
+.driver-identity-value {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.driver-identity-sep {
+  width: 1px;
+  height: 14px;
+  background: #254468;
+}
+
+.driver-demo-badge {
+  margin-left: auto;
+  font-size: 10px;
+  background: #27402a;
+  color: #6ee7b7;
+  border: 1px solid #335938;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Main Content Area */
+.driver-main {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.driver-home {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cards Base */
+.driver-card {
+  background: #0e2238;
+  border: 1px solid #1c3a5c;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.driver-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #8da4bc;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.driver-proto-badge {
+  margin-left: auto;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #1e3b5e;
+  color: #94badf;
+  border: 1px solid #2b517d;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.driver-live-badge {
+  margin-left: auto;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #144439;
+  color: #5eead4;
+  border: 1px solid #1d6051;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+/* Route Card */
+.driver-route-main {
+  background: #132b47;
+  border: 1px solid #204166;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.driver-route-endpoints {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.driver-route-city {
+  font-family: "Manrope", sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.driver-route-arrow {
+  font-size: 20px;
+  color: #38bdf8;
+}
+
+.driver-route-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #1e3d61;
+}
+
+.driver-route-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.driver-stat-label {
+  font-size: 11px;
+  color: #7b94ad;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.driver-stat-value {
+  font-family: "Manrope", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.driver-stat-value--green {
+  color: #4ade80;
+}
+
+.driver-route-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Buttons */
+.driver-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  border: 0;
+  transition: all 0.18s;
+  min-height: 48px;
+}
+
+.driver-btn--full {
+  width: 100%;
+}
+
+.driver-btn--primary {
+  background: #1d72b8;
+  color: #ffffff;
+  border: 1px solid #2b84d1;
+}
+
+.driver-btn--primary:hover {
+  background: #2582cf;
+}
+
+.driver-btn--secondary {
+  background: #163657;
+  color: #c9dcf0;
+  border: 1px solid #28517c;
+}
+
+.driver-btn--secondary:hover {
+  background: #1e456d;
+  color: #ffffff;
+}
+
+.driver-btn--outline {
+  background: transparent;
+  color: #93b5da;
+  border: 1px solid #28517c;
+}
+
+.driver-btn--outline:hover {
+  background: #153454;
+  color: #ffffff;
+}
+
+.driver-btn--danger {
+  background: #c53030;
+  color: #ffffff;
+  border: 1px solid #e53e3e;
+}
+
+.driver-btn--danger:hover {
+  background: #d63838;
+}
+
+.driver-proto-note {
+  font-size: 11px;
+  color: #8fa4b8;
+  margin: 10px 0 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Road Ahead / Risk Card */
+.driver-card--risk {
+  border-left: 4px solid #3b82f6;
+}
+
+.driver-risk--high {
+  border-left-color: #ef4444;
+  background: linear-gradient(180deg, #181c2b 0%, #122033 100%);
+}
+
+.driver-risk--medium {
+  border-left-color: #f59e0b;
+}
+
+.driver-risk--low {
+  border-left-color: #10b981;
+}
+
+.driver-risk-level {
+  font-family: "Manrope", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.driver-risk--high .driver-risk-level {
+  color: #f87171;
+}
+
+.driver-risk-summary {
+  font-size: 15px;
+  color: #ffffff;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.driver-risk-detail {
+  background: #132a45;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.driver-risk-detail strong {
+  color: #ffffff;
+}
+
+/* Alert Card */
+.driver-card--alert {
+  border-left: 4px solid #f97316;
+}
+
+.driver-alert-badge--critical {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  background: #45151b;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.driver-alert-title {
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.driver-alert-location {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.driver-alert-action {
+  font-size: 13px;
+  color: #e2e8f0;
+  background: #142a42;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.driver-alert-clear {
+  text-align: center;
+  padding: 18px 10px;
+}
+
+.driver-alert-clear-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #144133;
+  color: #34d399;
+  font-size: 22px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 10px;
+}
+
+.driver-alert-clear-title {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  color: #6ee7b7;
+  font-size: 14px;
+}
+
+.driver-alert-clear-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 4px 0 0;
+}
+
+/* Weather Card */
+.driver-weather-loading,
+.driver-weather-error {
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.driver-weather-main {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.driver-weather-icon {
+  font-size: 28px;
+}
+
+.driver-weather-temp {
+  font-family: "Manrope", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.driver-weather-condition {
+  font-size: 15px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.driver-weather-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.driver-weather-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.driver-weather-advice {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.driver-weather-advice--warn {
+  background: #39281a;
+  color: #fdba74;
+  border: 1px solid #7c4819;
+}
+
+.driver-weather-advice--ok {
+  background: #14352a;
+  color: #86efac;
+  border: 1px solid #1a5641;
+}
+
+/* Report CTA Card */
+.driver-card--report-cta {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.driver-report-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  color: #ffffff;
+  text-decoration: none;
+  border: 1px solid #dc2626;
+  box-shadow: 0 6px 20px rgba(185, 28, 28, 0.4);
+  transition: transform 0.18s, background 0.18s;
+  min-height: 60px;
+}
+
+.driver-report-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #c52424 0%, #a82020 100%);
+}
+
+.driver-report-btn strong {
+  display: block;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.driver-report-btn span {
+  display: block;
+  font-size: 12px;
+  color: #fecaca;
+  margin-top: 3px;
+}
+
+/* Quick Actions */
+.driver-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.driver-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 6px;
+  background: #132a44;
+  border: 1px solid #1f4066;
+  border-radius: 10px;
+  color: #cbd5e1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.driver-quick-btn:hover {
+  background: #1a395c;
+  color: #ffffff;
+  border-color: #2b5687;
+}
+
+.driver-quick-btn span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.driver-quick-btn--danger {
+  color: #f87171;
+  border-color: #592328;
+}
+
+.driver-quick-btn--danger:hover {
+  background: #45181d;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
+/* Redirect View */
+.driver-tab-redirect {
+  text-align: center;
+  padding: 48px 20px;
+  background: #0e2238;
+  border-radius: 14px;
+  border: 1px solid #1c3a5c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.driver-redirect-icon {
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+
+.driver-redirect-icon--red {
+  color: #ef4444;
+}
+
+.driver-tab-redirect h2 {
+  font-family: "Manrope", sans-serif;
+  font-size: 22px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.driver-tab-redirect p {
+  color: #94a3b8;
+  font-size: 14px;
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+/* Bottom Nav */
+.driver-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: #0c1c2e;
+  border-top: 1px solid #1a3656;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  z-index: 50;
+  backdrop-filter: blur(12px);
+}
+
+.driver-nav-tab {
+  border: 0;
+  background: transparent;
+  color: #7b94ad;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.18s;
+  padding: 6px 0;
+}
+
+.driver-nav-tab:hover {
+  color: #cbd5e1;
+}
+
+.driver-nav-tab.active {
+  color: #38bdf8;
+}
+
+.driver-nav-tab--report {
+  color: #f87171;
+}
+
+.driver-nav-tab--report.active {
+  color: #ef4444;
+}
+
+/* Switcher in Operations Portal */
+.ops-portal-switch {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(47, 143, 139, 0.12);
+  border: 1px solid rgba(47, 143, 139, 0.28);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #54c5bd;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.18s;
+}
+
+.ops-portal-switch:hover {
+  background: rgba(47, 143, 139, 0.24);
+  color: #ffffff;
+  border-color: #54c5bd;
+}
+
+.header-driver-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  background: #f0f7f6;
+  color: #1a6f69;
+  border: 1px solid #c0e0dc;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.18s;
+}
+
+.header-driver-switch:hover {
+  background: #2f8f8b;
+  color: #ffffff;
+  border-color: #2f8f8b;
+}
+
+.dark-mode .header-driver-switch {
+  background: #15373a;
+  color: #5edcd3;
+  border-color: #23585c;
+}
+
+.dark-mode .header-driver-switch:hover {
+  background: #2f8f8b;
+  color: #ffffff;
+}
