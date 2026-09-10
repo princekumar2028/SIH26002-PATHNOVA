@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -28,6 +28,7 @@ import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions } from "@/data/dashboard";
 import { riskFactors, riskZones, RiskZone } from "@/data/risk";
+import { getV2VAlerts, subscribeV2VAlerts } from "@/lib/v2vStore";
 
 const nav = [
   ["Overview", LayoutDashboard, "/dashboard"],
@@ -445,7 +446,9 @@ function HighRiskTable({
 }
 
 /* 3. Why is this Road Dangerous? (AI Explanation) */
-function WhyDangerous({ zone }: { zone: RiskZone }) {
+function WhyDangerous({ zone, v2vAlerts }: { zone: RiskZone; v2vAlerts?: ReturnType<typeof getV2VAlerts> }) {
+  const activeV2V = v2vAlerts && v2vAlerts.length > 0 ? v2vAlerts[0] : null;
+
   return (
     <section className="panel prediction-card">
       <div className="ai-heading">
@@ -467,10 +470,24 @@ function WhyDangerous({ zone }: { zone: RiskZone }) {
       </div>
 
       <div className="prediction-message">
-        Elevated transit hazard detected near <strong>{zone.location}</strong>. Risk factors reflect combined meteorological, terrain slope, and telemetry inputs:
+        Elevated transit hazard detected near <strong>{zone.location}</strong>. Risk factors reflect combined meteorological, terrain slope, driver reports, and telemetry inputs:
       </div>
 
       <div className="risk-reasons-grid">
+        {activeV2V && (
+          <div className="risk-reason-item" style={{ border: "1px solid #fca5a5", background: "#fef2f2", borderRadius: "8px" }}>
+            <span className="risk-reason-icon" style={{ background: "#fee2e2", color: "#dc2626" }}>
+              <AlertTriangle size={16} />
+            </span>
+            <div>
+              <strong style={{ color: "#991b1b" }}>Driver-Reported Road Hazard</strong>
+              <p style={{ color: "#7f1d1d" }}>
+                Active hazard report ({activeV2V.title.replace(/^V2V Hazard:\s*/i, "")}) received near {activeV2V.location}. Shared across transport network.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="risk-reason-item">
           <span className="risk-reason-icon">
             <CloudRain size={16} />
@@ -644,6 +661,12 @@ export default function RiskIntelligence() {
   const [drawerZone, setDrawerZone] = useState<RiskZone | null>(null);
   const [refresh, setRefresh] = useState(false);
 
+  const [v2vAlerts, setV2VAlerts] = useState(() => getV2VAlerts());
+  useEffect(() => {
+    const unsub = subscribeV2VAlerts(() => setV2VAlerts(getV2VAlerts()));
+    return unsub;
+  }, [refresh]);
+
   // Active zone for explanation & action (defaults to Bhalukpong - highest risk, or selected)
   const activeZone = selected || riskZones[0];
 
@@ -690,7 +713,7 @@ export default function RiskIntelligence() {
 
           {/* 3. Why is this Road Dangerous? (AI Explanation) */}
           <div style={{ marginTop: "18px" }}>
-            <WhyDangerous zone={activeZone} />
+            <WhyDangerous zone={activeZone} v2vAlerts={v2vAlerts} />
           </div>
 
           {/* 4. AI Recommended Action */}

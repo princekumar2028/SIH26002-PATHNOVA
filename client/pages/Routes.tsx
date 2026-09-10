@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -26,6 +26,8 @@ import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions } from "@/data/dashboard";
 import { routeOptions, riskFactors, RouteOption } from "@/data/routes";
+import { getV2VAlerts, subscribeV2VAlerts } from "@/lib/v2vStore";
+import { V2VHazardAlert } from "@shared/api";
 
 const nav = [
   ["Overview", LayoutDashboard, "/dashboard"],
@@ -245,10 +247,12 @@ function RouteCard({
   route,
   selected,
   onSelect,
+  activeV2VAlert,
 }: {
   route: RouteOption;
   selected: boolean;
   onSelect: () => void;
+  activeV2VAlert?: V2VHazardAlert | null;
 }) {
   return (
     <article className={`route-option ${selected ? "selected" : ""}`}>
@@ -304,13 +308,21 @@ function RouteCard({
           Road <b>{route.roadCondition}</b>
         </span>
       </div>
+
+      {route.id === "route-b" && activeV2VAlert && (
+        <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px", padding: "8px 12px", marginTop: "10px", color: "#b91c1c", fontSize: "12px" }}>
+          <AlertTriangle size={13} style={{ display: "inline", marginRight: "5px" }} />
+          <strong>Driver-reported hazard ahead:</strong> {activeV2VAlert.message}. Safer alternative (Route A) recommended.
+        </div>
+      )}
+
       {route.isRecommended ? (
         <p className="route-reason">
           <Zap size={13} /> Lower disruption probability and better road conditions despite
           slightly longer travel time.
         </p>
       ) : (
-        route.id === "route-b" && (
+        route.id === "route-b" && !activeV2VAlert && (
           <p className="route-warning">
             <AlertTriangle size={13} /> High congestion and rainfall risk detected.
           </p>
@@ -399,7 +411,7 @@ function RouteMap({ selected }: { selected: number }) {
 }
 
 /* ─── 4. AI Route Recommendation ─── */
-function AiRecommendation({ emergency }: { emergency: boolean }) {
+function AiRecommendation({ emergency, activeV2VAlert }: { emergency: boolean; activeV2VAlert?: V2VHazardAlert | null }) {
   return (
     <section className="panel route-ai-card">
       <div className="ai-heading">
@@ -428,11 +440,12 @@ function AiRecommendation({ emergency }: { emergency: boolean }) {
         </span>
       </div>
       <p className="ai-reasoning">
-        Although Route B is 50 minutes faster under normal conditions, current rainfall and
-        congestion increase its disruption probability. Route A provides the best balance between
-        safety, reliability and travel time.
+        {activeV2VAlert
+          ? `Driver-reported hazard received near ${activeV2VAlert.location}. Route A is strongly recommended as the safer alternative.`
+          : `Although Route B is 50 minutes faster under normal conditions, current rainfall and congestion increase its disruption probability. Route A provides the best balance between safety, reliability and travel time.`}
       </p>
       <ul className="ai-checks">
+        {activeV2VAlert && <li style={{ color: "#dc2626", fontWeight: 600 }}>⚠ Driver-reported hazard active on Route B</li>}
         <li>Lower disruption probability</li>
         <li>Better road condition</li>
         <li>Lower landslide exposure</li>
@@ -448,20 +461,16 @@ function AiRecommendation({ emergency }: { emergency: boolean }) {
 /* ─── 5. Risk & Delay Summary (merged compact section) ─── */
 function RiskAndDelay() {
   return (
-    <div className="route-two-col">
-      {/* Risk Analysis */}
-      <section className="panel risk-analysis">
+    <div className="risk-delay-grid">
+      <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Route Risk Analysis</h2>
-            <p>
-              Route A · Overall Risk Score <b className="risk-low">18% — LOW</b>
-            </p>
+            <h2>Risk Factor Distribution</h2>
+            <p>Weighted inputs to route risk score</p>
           </div>
-          <span className="risk-score">18%</span>
         </div>
-        <div className="factor-list">
-          {riskFactors.map(([label, value]) => (
+        <div className="risk-factor-list">
+          {riskFactors.slice(0, 4).map(([label, value]) => (
             <div key={label}>
               <span>
                 <b>{label}</b>
@@ -475,24 +484,22 @@ function RiskAndDelay() {
         </div>
       </section>
 
-      {/* Delay Prediction */}
-      <section className="panel delay-card">
+      <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>AI Delay Prediction</h2>
-            <p>Route A · Confidence 87%</p>
+            <h2>Delay Probability Window</h2>
+            <p>Estimated delay likelihood across corridors</p>
           </div>
-          <Clock3 className="weather-icon" size={20} />
         </div>
-        <div className="delay-values">
+        <div className="delay-stats">
           <span>
-            <b>10h 20m</b>Normal travel time
+            <b>Route A</b>+20 min delay (15% prob.)
           </span>
           <span>
-            <b>10h 40m</b>Predicted travel time
+            <b>Route B</b>+75 min delay (68% prob.)
           </span>
           <span>
-            <b className="risk-medium">+20 min</b>Expected delay
+            <b>Route C</b>+45 min delay (32% prob.)
           </span>
         </div>
         <div className="delay-bar">
@@ -514,6 +521,14 @@ export default function Routes() {
   const [emergency, setEmergency] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
   const [refresh, setRefresh] = useState(false);
+
+  const [v2vAlerts, setV2VAlerts] = useState(() => getV2VAlerts());
+  useEffect(() => {
+    const unsub = subscribeV2VAlerts(() => setV2VAlerts(getV2VAlerts()));
+    return unsub;
+  }, [refresh]);
+
+  const activeV2VAlert = v2vAlerts.find((a) => a.status === "active") ?? null;
 
   return (
     <div className={dark ? "app-shell dark-mode" : "app-shell"}>
@@ -591,6 +606,7 @@ export default function Routes() {
                 route={r}
                 selected={selected === i}
                 onSelect={() => setSelected(i)}
+                activeV2VAlert={activeV2VAlert}
               />
             ))}
           </div>
@@ -598,7 +614,7 @@ export default function Routes() {
           {/* 3. Map + 4. AI Recommendation */}
           <div className="route-main-grid">
             <RouteMap selected={selected} />
-            <AiRecommendation emergency={emergency} />
+            <AiRecommendation emergency={emergency} activeV2VAlert={activeV2VAlert} />
           </div>
 
           {/* 5. Risk & Delay (compact) */}

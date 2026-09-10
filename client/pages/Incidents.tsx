@@ -104,7 +104,7 @@ function mapApiIncidentToRecord(inc: Incident): IncidentRecord {
     location: inc.location_name || `${inc.latitude.toFixed(2)}° N, ${inc.longitude.toFixed(2)}° E`,
     coordinates: `${inc.latitude.toFixed(4)}° N, ${inc.longitude.toFixed(4)}° E`,
     description: inc.description || "Field accessibility disruption reported on corridor.",
-    reportedBy: "Mobile Field Unit",
+    reportedBy: "Driver Report",
     reportedAt: inc.created_at
       ? new Date(inc.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : "Just now",
@@ -931,7 +931,10 @@ function Details({
 
         <div className="incident-detail-grid">
           <span>
-            Reported by<b>{incident.reportedBy}</b>
+            Source<b>{incident.reportedBy === "Mobile Field Unit" ? "Driver Report" : incident.reportedBy}</b>
+          </span>
+          <span>
+            Hazard Sharing<b style={{ color: "#2563eb" }}>Shared with relevant vehicles</b>
           </span>
           <span>
             Reported time<b>{incident.reportedAt}</b>
@@ -944,9 +947,6 @@ function Details({
           </span>
           <span>
             Disruption impact<b>{incident.disruptionProbability}% probability</b>
-          </span>
-          <span>
-            Model confidence<b>{incident.confidence}%</b>
           </span>
         </div>
 

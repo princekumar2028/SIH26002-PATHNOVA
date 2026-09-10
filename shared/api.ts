@@ -21,6 +21,11 @@ export const INCIDENT_TYPES = [
   "obstruction",
   "flooding",
   "other",
+  // V2V driver-reported road hazards
+  "road_blocked",
+  "landslide",
+  "road_damage_severe",
+  "other_hazard",
 ] as const;
 
 export const SEVERITY_LEVELS = ["low", "medium", "high", "critical"] as const;
@@ -120,4 +125,35 @@ export interface WeatherResponse {
   message: string;
   weather?: WeatherData;
   errors?: string[];
+}
+
+// ---------------------------------------------------------------------------
+// V2V Hazard Alert types (client-side simulation)
+// ---------------------------------------------------------------------------
+
+export type V2VAlertStatus = "active" | "acknowledged" | "resolved";
+
+/**
+ * A Vehicle-to-Vehicle hazard alert generated when a driver reports a road hazard.
+ * Shared between DriverPortal and Alerts page via the v2vStore module.
+ */
+export interface V2VHazardAlert {
+  id: string;
+  type: "v2v_hazard";
+  source: "driver_report";
+  /** ID of the incident that triggered this alert */
+  incidentId: string;
+  severity: "Critical" | "High" | "Medium";
+  title: string;
+  message: string;
+  location: string;
+  timestamp: string;
+  /** Vehicle ID that should receive this alert */
+  recipientVehicleId: string;
+  /** Vehicle ID of the reporting vehicle */
+  reportingVehicleId: string;
+  recommendedAction: string;
+  status: V2VAlertStatus;
+  /** 0–100 prototype confidence score */
+  confidenceScore: number;
 }

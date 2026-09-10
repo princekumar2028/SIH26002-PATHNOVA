@@ -29,6 +29,7 @@ import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions } from "@/data/dashboard";
 import { weatherByRegion, WeatherRegion } from "@/data/weather";
 import { useWeather } from "@/hooks/use-weather";
+import { getV2VAlerts, subscribeV2VAlerts } from "@/lib/v2vStore";
 
 // ---------------------------------------------------------------------------
 // Constants & Navigation
@@ -338,7 +339,27 @@ function LiveWeatherCard({
 // ---------------------------------------------------------------------------
 
 function Hazards() {
+  const [v2vAlerts, setV2VAlerts] = useState(() => getV2VAlerts());
+  useEffect(() => {
+    const unsub = subscribeV2VAlerts(() => setV2VAlerts(getV2VAlerts()));
+    return unsub;
+  }, []);
+
+  const activeV2V = v2vAlerts.find((a) => a.status === "active");
+
   const cards: [string, number, string, string, any, string][] = [
+    ...(activeV2V
+      ? [
+          [
+            "Driver Hazard Report",
+            activeV2V.confidenceScore || 85,
+            activeV2V.location,
+            `Heavy rainfall + ${activeV2V.title.replace(/^V2V Hazard:\s*/i, "")}`,
+            AlertTriangle,
+            "High",
+          ] as [string, number, string, string, any, string],
+        ]
+      : []),
     ["Flood Risk", 68, "Silchar, Guwahati", "Heavy rainfall + river catchment swell", Waves, "High"],
     ["Landslide Risk", 79, "Bhalukpong, Bomdila", "Saturated hill slope + rockfall susceptibility", Mountain, "High"],
     ["Severe Weather", 42, "Meghalaya, Assam", "Convective storm cells + strong gusts", CloudLightning, "Medium"],

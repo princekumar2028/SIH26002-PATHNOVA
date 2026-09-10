@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState, useEffect } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -35,6 +35,7 @@ import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions } from "@/data/dashboard";
 import { vehicleRecords, VehicleRecord } from "@/data/vehicles";
+import { getActiveHazardForVehicle, subscribeV2VAlerts } from "@/lib/v2vStore";
 
 // ---------------------------------------------------------------------------
 // Helpers & Data Mappings
@@ -208,7 +209,7 @@ function Header({ region, setRegion, dark, setDark, setMobileOpen }: any) {
           </select>
           <ChevronDown size={14} />
         </div>
-        <span className="date-header">{todayStr} · Fleet Feed</span>
+        <span className="date-header">{todayStr} Â· Fleet Feed</span>
         <button
           className={`system-status ${online ? "online" : "offline"}`}
           onClick={() => setOnline(!online)}
@@ -304,7 +305,7 @@ function FleetMap({ onSelect }: { onSelect: (v: VehicleRecord) => void }) {
               style={{ left: `${cx}%`, top: `${cy}%` }}
               onClick={() => onSelect(v)}
               aria-label={`View ${v.id}`}
-              title={`${v.id} (${v.status}) - ${v.currentLocation} → ${v.destination}`}
+              title={`${v.id} (${v.status}) - ${v.currentLocation} â†’ ${v.destination}`}
             >
               <Truck size={13} />
             </button>
@@ -345,7 +346,7 @@ function FleetMap({ onSelect }: { onSelect: (v: VehicleRecord) => void }) {
         <span>
           <i className="legend-critical" /> Offline
         </span>
-        <span style={{ color: "#7b91a2", marginLeft: "4px" }}>· Click any marker to inspect</span>
+        <span style={{ color: "#7b91a2", marginLeft: "4px" }}>Â· Click any marker to inspect</span>
       </div>
     </div>
   );
@@ -468,68 +469,76 @@ function VehicleTable({
                 </td>
               </tr>
             ) : (
-              records.map((v: VehicleRecord) => (
-                <tr key={v.id} onClick={() => onSelect(v)}>
-                  <td>
-                    <strong>{v.id}</strong>
-                    <small>{v.vehicleType}</small>
-                  </td>
-                  <td>{v.driver}</td>
-                  <td>
-                    <strong>{v.currentLocation}</strong>
-                    <small style={{ color: "#7e91a1" }}>→ {v.destination}</small>
-                  </td>
-                  <td>
-                    <strong>{v.speed} km/h</strong>
-                    <small style={{ color: "#8a9caa" }}>Avg {v.averageSpeed} km/h</small>
-                  </td>
-                  <td>
-                    <span className={`fleet-status ${statusTone(v.status)}`}>
-                      <i />
-                      {v.status}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`risk-value ${
-                        v.riskLevel === "High"
-                          ? "risk-high"
-                          : v.riskLevel === "Medium"
-                          ? "risk-medium"
-                          : v.riskLevel === "Low"
-                          ? "risk-low"
-                          : ""
-                      }`}
-                    >
-                      {v.riskLevel}
-                    </span>
-                  </td>
-                  <td>
-                    <strong>{v.eta}</strong>
-                    <small style={{ color: "#7e91a1" }}>{v.routeProgress}% completed</small>
-                  </td>
-                  <td>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <Fuel size={12} style={{ color: v.fuelLevel < 40 ? "#d15156" : "#2677d9" }} />
-                      <b>{v.fuelLevel}%</b>
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: "9px", color: "#8a9caa" }}>{v.lastUpdated}</span>
-                  </td>
-                  <td>
-                    <button
-                      className="view-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelect(v);
-                      }}
-                    >
-                      Inspect
-                    </button>
-                  </td>
-                </tr>
-              ))
+              records.map((v: VehicleRecord) => {
+                const v2vHazard = getActiveHazardForVehicle(v.id);
+                return (
+                  <tr key={v.id} onClick={() => onSelect(v)}>
+                    <td>
+                      <strong>{v.id}</strong>
+                      <small>{v.vehicleType}</small>
+                      {v2vHazard && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "10px", background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: "4px", padding: "1px 6px", marginTop: "3px", fontWeight: 700 }}>
+                          âš  Hazard Ahead
+                        </span>
+                      )}
+                    </td>
+                    <td>{v.driver}</td>
+                    <td>
+                      <strong>{v.currentLocation}</strong>
+                      <small style={{ color: "#7e91a1" }}>â†’ {v.destination}</small>
+                    </td>
+                    <td>
+                      <strong>{v.speed} km/h</strong>
+                      <small style={{ color: "#8a9caa" }}>Avg {v.averageSpeed} km/h</small>
+                    </td>
+                    <td>
+                      <span className={`fleet-status ${statusTone(v.status)}`}>
+                        <i />
+                        {v.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`risk-value ${
+                          v.riskLevel === "High"
+                            ? "risk-high"
+                            : v.riskLevel === "Medium"
+                            ? "risk-medium"
+                            : v.riskLevel === "Low"
+                            ? "risk-low"
+                            : ""
+                        }`}
+                      >
+                        {v.riskLevel}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{v.eta}</strong>
+                      <small style={{ color: "#7e91a1" }}>{v.routeProgress}% completed</small>
+                    </td>
+                    <td>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <Fuel size={12} style={{ color: v.fuelLevel < 40 ? "#d15156" : "#2677d9" }} />
+                        <b>{v.fuelLevel}%</b>
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: "9px", color: "#8a9caa" }}>{v.lastUpdated}</span>
+                    </td>
+                    <td>
+                      <button
+                        className="view-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(v);
+                        }}
+                      >
+                        Inspect
+                      </button>
+                    </td>
+                  </tr>
+              );
+            })
             )}
           </tbody>
         </table>
@@ -562,7 +571,7 @@ function AlertsPanel({ onSelect }: { onSelect: (v: VehicleRecord) => void }) {
           </span>
           <span>
             <strong>
-              {v.id} · {v.currentLocation} → {v.destination}
+              {v.id} Â· {v.currentLocation} â†’ {v.destination}
             </strong>
             <small>{v.alert}</small>
           </span>
@@ -592,7 +601,7 @@ function DetailsDrawer({
             <span className="eyebrow blue">SIMULATED TELEMETRY</span>
             <h2>{vehicle.id}</h2>
             <p>
-              {vehicle.driver} · {vehicle.vehicleType}
+              {vehicle.driver} Â· {vehicle.vehicleType}
             </p>
           </div>
           <button className="icon-button" onClick={close} aria-label="Close drawer">
@@ -757,7 +766,7 @@ export default function Vehicles() {
           {/* Header Intro */}
           <div className="dashboard-intro">
             <div>
-              <span className="eyebrow blue">FLEET OPERATIONS · CORRIDOR TELEMETRY</span>
+              <span className="eyebrow blue">FLEET OPERATIONS Â· CORRIDOR TELEMETRY</span>
               <h2>Fleet Operations &amp; Tracking</h2>
               <p>
                 Real-time operational status, corridor transit progress, and exception monitoring across the North Eastern Region.

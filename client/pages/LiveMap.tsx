@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -31,6 +31,7 @@ import {
 import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions, routes } from "@/data/dashboard";
+import { getV2VAlerts, subscribeV2VAlerts } from "@/lib/v2vStore";
 
 // ---------------------------------------------------------------------------
 // Operational Target Types & Dataset
@@ -520,6 +521,14 @@ function GisMap({
   const [selectedRoute, setSelectedRoute] = useState(0);
   const [showLocation, setShowLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [v2vAlerts, setV2VAlerts] = useState(() => getV2VAlerts());
+
+  useEffect(() => {
+    const unsub = subscribeV2VAlerts(() => {
+      setV2VAlerts(getV2VAlerts());
+    });
+    return unsub;
+  }, []);
 
   const [layers, setLayers] = useState({
     vehicles: true,
@@ -831,6 +840,61 @@ function GisMap({
               <AlertTriangle size={14} />
             </button>
           ))}
+
+          {/* V2V Driver-Reported Hazard Markers */}
+          {layers.incidents &&
+            v2vAlerts
+              .filter((a) => a.status === "active")
+              .map((v2vAlert) => {
+                const locLower = v2vAlert.location.toLowerCase();
+                let x = 36;
+                let y = 46;
+                if (locLower.includes("bhalukpong")) { x = 35; y = 48; }
+                else if (locLower.includes("bomdila")) { x = 38; y = 41; }
+                else if (locLower.includes("itanagar")) { x = 47; y = 29; }
+                else if (locLower.includes("guwahati")) { x = 22; y = 72; }
+                else if (locLower.includes("shillong")) { x = 31; y = 79; }
+                else if (locLower.includes("silchar")) { x = 51; y = 84; }
+
+                const handleSelectV2V = () => {
+                  const target: MapTarget = {
+                    type: "incident",
+                    id: v2vAlert.id,
+                    title: `⚠ Hazard Reported Ahead: ${v2vAlert.title.replace(/^V2V Hazard:\s*/i, "")}`,
+                    category: "DRIVER-REPORTED HAZARD",
+                    location: v2vAlert.location,
+                    condition: v2vAlert.message,
+                    status: "Driver Report Active",
+                    severity: `${v2vAlert.severity.toUpperCase()} (${v2vAlert.confidenceScore}% Signal Confidence)`,
+                    severityTone: v2vAlert.severity === "High" ? "critical" : "yellow",
+                    lastUpdated: v2vAlert.timestamp,
+                    details: `Recommended action: ${v2vAlert.recommendedAction}. Source: Driver report`,
+                    linkTo: "/alerts",
+                    linkText: "Inspect Driver Hazard Alert",
+                  };
+                  setSelectedTarget(target);
+                  setPopup(target);
+                };
+
+                return (
+                  <button
+                    key={v2vAlert.id}
+                    className="marker incident-marker"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      border: "2px solid #ef4444",
+                      background: "#991b1b",
+                      boxShadow: "0 0 10px rgba(239, 68, 68, 0.6)",
+                    }}
+                    onClick={handleSelectV2V}
+                    aria-label={v2vAlert.title}
+                    title={`⚠ Hazard reported ahead: ${v2vAlert.title} at ${v2vAlert.location}`}
+                  >
+                    <AlertTriangle size={14} style={{ color: "#fca5a5" }} />
+                  </button>
+                );
+              })}
         </div>
 
         {/* Floating Marker Popup */}

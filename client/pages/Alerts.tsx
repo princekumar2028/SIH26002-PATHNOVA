@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -30,6 +30,7 @@ import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { regions } from "@/data/dashboard";
 import { alertRecords as initialAlerts, AlertRecord } from "@/data/alerts";
+import { getV2VAlerts, v2vAlertToRecord, subscribeV2VAlerts } from "@/lib/v2vStore";
 
 const nav = [
   ["Overview", LayoutDashboard, "/dashboard"],
@@ -55,6 +56,8 @@ const iconFor = (type: string) => {
       return RouteIcon;
     case "AI Predicted":
       return BrainCircuit;
+    case "V2V Hazard":
+      return AlertTriangle;
     default:
       return AlertTriangle;
   }
@@ -289,7 +292,7 @@ function AlertFeed({
             />
           </label>
           <div className="alert-filter-chips">
-            {["All", "Unread", "Critical", "High", "Medium", "Route", "Vehicle", "Weather"].map(
+            {["All", "Unread", "Critical", "High", "Medium", "Route", "Vehicle", "Weather", "V2V Hazard"].map(
               (x) => (
                 <button
                   key={x}
@@ -420,6 +423,15 @@ function AlertFeed({
                       style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                     >
                       View Weather <ChevronRight size={12} />
+                    </Link>
+                  ) : a.type === "V2V Hazard" ? (
+                    <Link
+                      to="/incidents"
+                      className="view-button"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+                    >
+                      View Incident <ChevronRight size={12} />
                     </Link>
                   ) : (
                     <button className="view-button">Details</button>
@@ -579,6 +591,11 @@ function Drawer({
               Check Weather <ExternalLink size={13} />
             </Link>
           )}
+          {alert.type === "V2V Hazard" && (
+            <Link to="/incidents" className="outline-button" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px" }}>
+              View Incident Report <ExternalLink size={13} />
+            </Link>
+          )}
         </div>
       </aside>
     </div>
@@ -724,7 +741,24 @@ export default function Alerts() {
   const [dark, setDark] = useState(false);
 
   // Alerts State
-  const [records, setRecords] = useState<AlertRecord[]>(initialAlerts);
+  const [records, setRecords] = useState<AlertRecord[]>(() => {
+    const v2vRecords = getV2VAlerts().map(v2vAlertToRecord);
+    return [...v2vRecords, ...initialAlerts];
+  });
+
+  useEffect(() => {
+    const syncV2V = () => {
+      const v2vRecords = getV2VAlerts().map(v2vAlertToRecord);
+      setRecords((prev) => {
+        const nonV2V = prev.filter((a) => a.type !== "V2V Hazard");
+        return [...v2vRecords, ...nonV2V];
+      });
+    };
+    const unsub = subscribeV2VAlerts(syncV2V);
+    syncV2V();
+    return unsub;
+  }, []);
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [selected, setSelected] = useState<AlertRecord | null>(null);
