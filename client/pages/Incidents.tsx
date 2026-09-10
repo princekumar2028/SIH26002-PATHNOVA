@@ -1,18 +1,1338 @@
-import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, BarChart3, Bell, BrainCircuit, CheckCircle2, ChevronDown, ChevronRight, CircleHelp, CloudRain, FileText, LayoutDashboard, Map as MapIcon, Menu, Moon, PanelLeftClose, PanelLeftOpen, RefreshCw, Route as RouteIcon, Search, Settings, Sun, Truck, X, Upload, MapPin, ShieldCheck, Waves, Mountain, TrafficCone } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import {
+  AlertTriangle,
+  Bell,
+  BrainCircuit,
+  Camera,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  CloudRain,
+  FileText,
+  LayoutDashboard,
+  Loader2,
+  Map as MapIcon,
+  MapPin,
+  Menu,
+  Moon,
+  Mountain,
+  PanelLeftClose,
+  PanelLeftOpen,
+  RefreshCw,
+  Route as RouteIcon,
+  Search,
+  ShieldCheck,
+  Sun,
+  TrafficCone,
+  Truck,
+  Upload,
+  Waves,
+  X,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
 import { useNetwork } from "@/components/OfflineUX";
 import { regions } from "@/data/dashboard";
-import { fieldReports, incidentRecords, IncidentRecord } from "@/data/incidents";
-const nav=[["Overview",LayoutDashboard,"/"],["Live Map",MapIcon,"/live-map"],["Vehicles",Truck,"/vehicles"],["Routes",RouteIcon,"/routes"],["Risk Intelligence",BrainCircuit,"/risk-intelligence"],["Incident Reporting",AlertTriangle,"/incidents"],["Weather & Hazards",CloudRain,"/weather-hazards"],["Alerts",Bell,"/alerts"]];
-const sev=(x:string)=>x==="Critical"?"red":x==="High"?"orange":x==="Medium"?"amber":"green"; const iconFor=(x:string)=>x==="Landslide"?Mountain:x==="Flood"?Waves:x==="Traffic"?TrafficCone:AlertTriangle;
-function Sidebar({collapsed,setCollapsed,mobileOpen,setMobileOpen}:any){const [profileOpen,setProfileOpen]=useState(false),[loggedOut,setLoggedOut]=useState(false);return <aside className={`sidebar ${collapsed?"sidebar-collapsed":""} ${mobileOpen?"mobile-open":""}`}><div className="brand"><div className="brand-mark"><PathnovaLogo /></div><div className="brand-copy"><strong><span className="path-wordmark">PATH</span><span className="nova-wordmark">NOVA</span></strong></div><button className="icon-button sidebar-toggle" onClick={()=>setCollapsed(!collapsed)}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button></div><div className="mobile-close"><button className="icon-button" onClick={()=>setMobileOpen(false)}><X size={20}/></button></div><nav className="nav-list">{nav.map(([label,Icon,href]:any)=>href==="#"?<button key={label} className="nav-item"><Icon size={18}/><span>{label}</span>{label==="Alerts"&&<b className="nav-badge">23</b>}</button>:<Link key={label} to={href} className={`nav-item ${label==="Incident Reporting"?"active":""}`} onClick={()=>setMobileOpen(false)}><Icon size={18}/><span>{label}</span></Link>)}</nav><div className="sidebar-bottom user-sidebar-bottom"><div className="profile-menu"><button type="button" className="profile" onClick={()=>setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><div className="avatar">LA</div><div className="profile-copy"><strong>{loggedOut?"Signed out":"Logistics Administrator"}</strong><small>{loggedOut?"Demo session ended":"Operations Manager"}</small></div><ChevronDown size={16}/></button>{profileOpen&&<div className="profile-dropdown" role="menu"><button type="button" role="menuitem" onClick={()=>setProfileOpen(false)}>Profile</button><button type="button" role="menuitem" onClick={()=>{setLoggedOut(true);setProfileOpen(false)}}>Logout</button></div>}</div></div></aside>}
-function Header({region,setRegion,dark,setDark,setMobileOpen}:any){const [online,setOnline]=useState(true);return <header className="topbar"><div className="mobile-menu"><button className="icon-button" onClick={()=>setMobileOpen(true)}><Menu size={22}/></button></div><div className="title-block"><h1>Incidents & Field Reports</h1><p>Capture and monitor road incidents and accessibility disruptions across NER.</p></div><div className="header-actions"><div className="select-wrap"><MapIcon size={16}/><select value={region} onChange={e=>setRegion(e.target.value)}>{regions.map(r=><option key={r}>{r}</option>)}</select><ChevronDown size={14}/></div><span className={`system-status ${online?"online":"offline"}`} onClick={()=>setOnline(!online)}><i/>{online?"System Operational":"Offline Mode"}</span><button className="icon-button" onClick={()=>setDark(!dark)}>{dark?<Sun size={19}/>:<Moon size={19}/>}</button><div className="header-avatar">LA</div></div></header>}
-const kpis=[["Total Incidents","248","All reports",FileText,"blue"],["Active Incidents","42","Requires action",AlertTriangle,"orange"],["Critical","9","Immediate response",AlertTriangle,"red"],["Under Verification","17","Awaiting review",ShieldCheck,"amber"],["Resolved Today","31","+8 from yesterday",CheckCircle2,"green"],["Field Reports Today","56","Across 8 states",MapPin,"teal"]];
-function Kpis(){return <div className="kpi-grid incident-kpis">{kpis.map(([l,v,n,Icon,t]:any)=><div className="kpi-card" key={l}><div className="kpi-top"><span className={`kpi-icon ${t==="red"?"text-red-600 bg-red-50":t==="orange"?"text-orange-600 bg-orange-50":t==="green"?"text-emerald-600 bg-emerald-50":t==="teal"?"text-teal-600 bg-teal-50":t==="amber"?"text-amber-600 bg-amber-50":"text-blue-600 bg-blue-50"}`}><Icon size={18}/></span><span className="muted">Today</span></div><div className="kpi-value">{v}</div><div className="kpi-label">{l}</div><div className="kpi-footer"><span className={`dot ${t}`}/><span className="muted">{n}</span></div></div>)}</div>}
-function IncidentMap({onSelect}:{onSelect:(i:IncidentRecord)=>void}){return <section className="panel incident-map-panel"><div className="panel-header"><div><h2>Live Incident Map</h2><p>Field reports and accessibility disruptions across the region</p></div><span className="map-connect"><i/> Connected · updated 30 sec ago</span></div><div className="incident-map"><div className="map-grid"><div className="district-lines"/><div className="region-shape"/><svg className="routes-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M20 73 C32 62 39 40 47 29 S63 50 70 76" className="route-line route-red"/><path d="M21 73 C33 79 56 79 70 76" className="route-line route-green"/><path d="M47 29 C52 49 58 65 70 76" className="route-line route-yellow"/></svg>{["Guwahati","Itanagar","Shillong","Imphal","Aizawl","Kohima","Agartala","Gangtok","Silchar","Bomdila"].map((n,i)=><div className="city" key={n} style={{left:`${[22,47,31,70,60,79,44,5,51,38][i]}%`,top:`${[72,29,79,76,91,56,94,67,84,41][i]}%`}}><i/>{n}</div>)}{incidentRecords.map(i=>{const Icon=iconFor(i.type);return <button key={i.id} className={`incident-pin ${sev(i.severity)}`} style={{left:`${i.x}%`,top:`${i.y}%`}} onClick={()=>onSelect(i)} aria-label={`View ${i.type} at ${i.location}`}><Icon size={14}/></button>})}</div><div className="map-controls"><button>+</button><button>−</button><button><MapPin size={14}/></button><button>□</button></div><div className="incident-map-legend"><strong>SEVERITY</strong><span><i className="legend-critical"/>Critical</span><span><i className="legend-orange"/>High</span><span><i className="legend-yellow"/>Medium</span><span><i className="legend-green"/>Low</span></div></div></section>}
-function ReportModal({close,onSubmit}:{close:()=>void;onSubmit:(message:string)=>void}){const [photos,setPhotos]=useState<File[]>([]);const {status}=useNetwork();const addPhotos=(files:FileList|null)=>{if(!files)return;setPhotos([...photos,...Array.from(files).slice(0,3-photos.length)])};const submit=()=>onSubmit(status==="offline"?"Saved Offline — Waiting for Sync":"Synced Successfully");return <div className="modal-backdrop" onClick={close}><div className="compare-modal incident-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={close}><X size={19}/></button><span className="eyebrow red">FIELD REPORTING</span><h2>Report Incident</h2><p className="modal-subtitle">Submit a location-aware report for verification by the operations team.</p><div className="incident-form"><label>Incident Type<select><option>Accident</option><option>Landslide</option><option>Flood</option><option>Road Damage</option><option>Road Blockage</option><option>Other</option></select></label><label>Severity<select><option>Medium</option><option>Low</option><option>High</option><option>Critical</option></select></label><label className="wide">Location<input placeholder="Enter location" defaultValue="Near Bomdila"/></label><label>GPS Location<button type="button" className="location-input"><MapPin size={14}/> Use current location</button><small className="geo-confirmation"><MapPin size={12}/> Location captured · Reported at 10:42 AM</small></label><label>Date & Time<input type="text" value="02 Sep 2026 · 10:44 AM" readOnly/></label><label className="wide">Description<textarea placeholder="Describe the incident..." defaultValue="Road accessibility reduced due to visible surface damage."/></label><div className="photo-evidence wide"><div className="photo-evidence-head"><strong>Photo Evidence</strong><small>Up to 3 photos · JPG or PNG</small></div><label className="upload-box"><input type="file" accept="image/*" multiple disabled={photos.length>=3} onChange={e=>addPhotos(e.target.files)}/><Upload size={18}/><strong>{photos.length>=3?"Photo limit reached":"Upload Photo"}</strong><small>Choose from device or drag and drop</small></label>{photos.length>0&&<div className="photo-previews">{photos.map((file,index)=><div className="photo-preview" key={`${file.name}-${index}`}><img src={URL.createObjectURL(file)} alt={file.name}/><div><span title={file.name}>{file.name}</span><button type="button" onClick={()=>setPhotos(photos.filter((_,photoIndex)=>photoIndex!==index))}>Remove</button></div></div>)}</div>}</div><label className="check-row wide"><input type="checkbox"/> Mark this incident as currently blocking the route</label></div><div className="reporter-line"><span>Reporter</span><b>Logistics Administrator · Operations Manager</b></div><div className="modal-footer"><p>Reports are queued for verification and map publication.</p><button className="primary-button" onClick={submit}>Submit Incident <ChevronRight size={15}/></button></div></div></div>}
-function Details({incident,close,onUpdate}:{incident:IncidentRecord;close:()=>void;onUpdate:(s:IncidentRecord["status"])=>void}){const Icon=iconFor(incident.type);return <div className="drawer-overlay" onClick={close}><aside className="incident-drawer" onClick={e=>e.stopPropagation()}><div className="drawer-head"><div><span className="eyebrow red">INCIDENT DETAILS</span><h2>{incident.id}</h2><p>{incident.type} · {incident.location}</p></div><button className="icon-button" onClick={close}><X size={19}/></button></div><div className="incident-drawer-status"><span className={`incident-severity ${sev(incident.severity)}`}><Icon size={14}/>{incident.severity}</span><span className="status-pill bg-amber-50 text-amber-700">{incident.status}</span></div><div className="mini-location"><MapPin size={14}/><span>{incident.coordinates}</span><div className="mini-map"><div className="mini-road"/><i/></div></div><div className="incident-detail-grid"><span>Reported by<b>{incident.reportedBy}</b></span><span>Reported time<b>{incident.reportedAt}</b></span><span>Affected route<b>{incident.affectedRoute}</b></span><span>Estimated delay<b>{incident.estimatedDelay}</b></span><span>Affected vehicles<b>{incident.affectedVehicles.length||"None"}</b></span><span>Risk impact<b>{incident.disruptionProbability}% probability</b></span></div><p className="incident-description">{incident.description}</p><div className="ai-incident"><strong><BrainCircuit size={15}/> AI Incident Analysis</strong><p>AI analysis indicates a high probability of route disruption due to the reported {incident.type.toLowerCase()}. The affected road segment may become inaccessible during continued rainfall.</p><div><span>Disruption <b>{incident.disruptionProbability}%</b></span><span>Confidence <b>{incident.confidence}%</b></span></div></div><div className="verification"><strong>Verification workflow</strong><div><span className="done">Reported</span><span className={incident.status!=="Under Verification"?"done":"current"}>Under Verification</span><span>Verified</span><span>Resolved</span></div></div><div className="drawer-actions"><button className="primary-button" onClick={()=>onUpdate("Verified")}>Verify Incident</button><button className="outline-button" onClick={()=>onUpdate("Resolved")}>Mark Resolved</button><button className="outline-button" onClick={()=>onUpdate("Rejected")}>Reject Report</button></div><button className="full-button">Alert affected vehicles <ChevronRight size={14}/></button></aside></div>}
-function Analytics(){return <div className="incident-analytics"><section className="panel analytics-mini"><div className="panel-header"><div><h2>Incident Analytics</h2><p>Last 7 days · by type</p></div><BarChart3 size={18} className="muted"/></div><div className="bar-chart">{[["Road",78],["Weather",64],["Flood",51],["Damage",43],["Traffic",35],["Other",22]].map(([x,v])=><span key={x}><i style={{height:`${v}%`}}/><b>{x}</b></span>)}</div></section><section className="panel offline-card"><div className="panel-header"><div><h2>Offline Sync</h2><p>Field reports waiting to sync</p></div><span className="offline-dot"/></div><div className="offline-count">3 <small>reports pending</small></div><p>Reports remain safely stored until a connection is restored.</p><button className="primary-button">Sync now <RefreshCw size={13}/></button></section></div>}
-export default function Incidents(){const [collapsed,setCollapsed]=useState(false),[mobileOpen,setMobileOpen]=useState(false),[region,setRegion]=useState(regions[0]),[dark,setDark]=useState(false),[filter,setFilter]=useState("All"),[type,setType]=useState("All Types"),[search,setSearch]=useState(""),[selected,setSelected]=useState<IncidentRecord|null>(null),[report,setReport]=useState(false),[submitted,setSubmitted]=useState(""),[records,setRecords]=useState(incidentRecords);const filtered=useMemo(()=>records.filter(i=>(filter==="All"||i.status===filter||filter===i.severity)&&(type==="All Types"||i.type===type)&&(!search||`${i.id} ${i.location} ${i.type}`.toLowerCase().includes(search.toLowerCase()))),[records,filter,type,search]);const update=(status:IncidentRecord["status"])=>{if(selected){const next={...selected,status};setRecords(records.map(i=>i.id===selected.id?next:i));setSelected(next)}};return <div className={dark?"app-shell dark-mode":"app-shell"}><Sidebar {...{collapsed,setCollapsed,mobileOpen,setMobileOpen}}/><main className="main-shell"><Header {...{region,setRegion,dark,setDark,setMobileOpen}}/><div className="dashboard incidents-dashboard"><div className="dashboard-intro"><div><span className="eyebrow blue">FIELD OPERATIONS · INCIDENT CONTROL</span><h2>Field Incident Reporting</h2><p>Report accidents, landslides, floods and road damage with location, time and photo evidence.</p></div><div className="incident-head-actions"><button className="outline-button"><RefreshCw size={14}/> Refresh</button><button className="outline-button"><FileText size={14}/> Export</button><button className="primary-button" onClick={()=>setReport(true)}><AlertTriangle size={14}/> Report Incident</button></div></div><Kpis/><IncidentMap onSelect={setSelected}/><section className="panel incidents-list"><div className="panel-header"><div><h2>Recent Incidents</h2><p>{filtered.length} incidents in the current operational view</p></div><div className="incident-filters"><label className="search-box"><Search size={15}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search incident ID, location or type..."/></label><select value={type} onChange={e=>setType(e.target.value)}><option>All Types</option>{["Road Damage","Landslide","Flood","Accident","Road Blockage","Bridge Damage","Traffic","Weather Hazard"].map(x=><option key={x}>{x}</option>)}</select></div></div><div className="filter-chips incident-chips">{["All","Active","Critical","Under Verification","Resolved","Rejected"].map(x=><button className={filter===x?"active":""} onClick={()=>setFilter(x)} key={x}>{x}</button>)}</div><div className="table-wrap"><table className="incident-table"><thead><tr><th>Incident ID</th><th>Type</th><th>Location</th><th>Severity</th><th>Reported By</th><th>Time</th><th>Status</th><th>Affected Route</th><th/></tr></thead><tbody>{filtered.map(i=><tr key={i.id} onClick={()=>setSelected(i)}><td><strong>{i.id}</strong></td><td>{i.type}</td><td>{i.location}</td><td><span className={`incident-severity ${sev(i.severity)}`}>{i.severity}</span></td><td>{i.reportedBy}</td><td>{i.reportedAt}</td><td><span className="status-pill bg-amber-50 text-amber-700">{i.status}</span></td><td>{i.affectedRoute}</td><td><button className="view-button" onClick={e=>{e.stopPropagation();setSelected(i)}}>View</button></td></tr>)}</tbody></table></div></section><div className="field-report-grid"><section className="panel field-reports"><div className="panel-header"><div><h2>Recent Field Reports</h2><p>Latest submissions from field teams</p></div><span className="status-pill bg-blue-50 text-blue-700">56 today</span></div>{fieldReports.map(r=><div className="field-report" key={r.location}><span className="field-photo"><FileText size={15}/></span><span><strong>{r.type} · {r.location}</strong><small>{r.reporter} · {r.time} · {r.photo}</small></span><span className="status-pill bg-amber-50 text-amber-700">{r.status}</span></div>)}</section><Analytics/></div></div></main>{report&&<ReportModal close={()=>setReport(false)} onSubmit={message=>{setReport(false);setSubmitted(message)}}/ >}{selected&&<Details incident={selected} close={()=>setSelected(null)} onUpdate={update}/>} {submitted&&<div className="toast-success"><CheckCircle2 size={16}/> {submitted} <b>INC-2026-0188</b><button onClick={()=>setSubmitted("")}><X size={13}/></button></div>}</div>}
+import { fieldReports, incidentRecords as seedIncidents, IncidentRecord } from "@/data/incidents";
+import {
+  Incident,
+  CreateIncidentRequest,
+  CreateIncidentResponse,
+  GetIncidentsResponse,
+  IncidentType,
+  SeverityLevel,
+} from "@shared/api";
+
+const nav = [
+  ["Overview", LayoutDashboard, "/"],
+  ["Live Map", MapIcon, "/live-map"],
+  ["Vehicles", Truck, "/vehicles"],
+  ["Routes", RouteIcon, "/routes"],
+  ["Risk Intelligence", BrainCircuit, "/risk-intelligence"],
+  ["Incident Reporting", AlertTriangle, "/incidents"],
+  ["Weather & Hazards", CloudRain, "/weather-hazards"],
+  ["Alerts", Bell, "/alerts"],
+];
+
+const sevColor = (x: string) =>
+  x === "Critical" ? "red" : x === "High" ? "orange" : x === "Medium" ? "amber" : "green";
+
+const iconFor = (x: string) =>
+  x === "Landslide"
+    ? Mountain
+    : x === "Flood"
+    ? Waves
+    : x === "Traffic" || x === "Road Blockage"
+    ? TrafficCone
+    : AlertTriangle;
+
+function mapApiIncidentToRecord(inc: Incident): IncidentRecord {
+  const typeMap: Record<string, string> = {
+    road_damage: "Road Damage",
+    obstruction: "Landslide",
+    flooding: "Flood",
+    accident: "Accident",
+    pothole: "Road Damage",
+    other: "Road Blockage",
+  };
+
+  const sevMap: Record<string, IncidentRecord["severity"]> = {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    critical: "Critical",
+  };
+
+  const statusMap: Record<string, IncidentRecord["status"]> = {
+    reported: "Under Verification",
+    verified: "Active",
+    in_progress: "Active",
+    resolved: "Resolved",
+  };
+
+  const x = Math.min(88, Math.max(12, Math.round(((inc.longitude - 89.5) / 6.0) * 80 + 10)));
+  const y = Math.min(88, Math.max(15, Math.round((1 - (inc.latitude - 24.0) / 4.5) * 75 + 15)));
+
+  const displayId = inc.id.length > 15 ? `INC-${inc.id.slice(0, 8).toUpperCase()}` : inc.id;
+
+  return {
+    id: displayId,
+    type: typeMap[inc.incident_type] || "Road Damage",
+    severity: sevMap[inc.severity] || "Medium",
+    x,
+    y,
+    location: inc.location_name || `${inc.latitude.toFixed(2)}° N, ${inc.longitude.toFixed(2)}° E`,
+    coordinates: `${inc.latitude.toFixed(4)}° N, ${inc.longitude.toFixed(4)}° E`,
+    description: inc.description || "Field accessibility disruption reported on corridor.",
+    reportedBy: "Mobile Field Unit",
+    reportedAt: inc.created_at
+      ? new Date(inc.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "Just now",
+    status: statusMap[inc.status] || "Under Verification",
+    affectedRoute: inc.location_name ? `${inc.location_name} Corridor` : "Assam / Arunachal Corridor",
+    affectedVehicles: [],
+    estimatedDelay:
+      inc.severity === "critical" ? "+60 min" : inc.severity === "high" ? "+35 min" : "+15 min",
+    disruptionProbability: inc.severity === "critical" ? 85 : inc.severity === "high" ? 65 : 35,
+    confidence: 88,
+    photo: inc.photo_url || undefined,
+  };
+}
+
+function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: any) {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
+
+  return (
+    <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+      <div className="brand">
+        <div className="brand-mark">
+          <PathnovaLogo />
+        </div>
+        <div className="brand-copy">
+          <strong>
+            <span className="path-wordmark">PATH</span>
+            <span className="nova-wordmark">NOVA</span>
+          </strong>
+        </div>
+        <button
+          className="icon-button sidebar-toggle"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-label="Toggle sidebar"
+        >
+          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+        </button>
+      </div>
+      <div className="mobile-close">
+        <button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Close sidebar">
+          <X size={20} />
+        </button>
+      </div>
+      <nav className="nav-list">
+        {nav.map(([label, Icon, href]: any) =>
+          href === "#" ? (
+            <button key={label} className="nav-item">
+              <Icon size={18} />
+              <span>{label}</span>
+              {label === "Alerts" && <b className="nav-badge">23</b>}
+            </button>
+          ) : (
+            <Link
+              key={label}
+              to={href}
+              className={`nav-item ${label === "Incident Reporting" ? "active" : ""}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </Link>
+          )
+        )}
+      </nav>
+      <div className="sidebar-bottom user-sidebar-bottom">
+        <div className="profile-menu">
+          <button
+            type="button"
+            className="profile"
+            onClick={() => setProfileOpen(!profileOpen)}
+            aria-expanded={profileOpen}
+          >
+            <div className="avatar">LA</div>
+            <div className="profile-copy">
+              <strong>{loggedOut ? "Signed out" : "Logistics Administrator"}</strong>
+              <small>{loggedOut ? "Demo session ended" : "Operations Manager"}</small>
+            </div>
+            <ChevronDown size={16} />
+          </button>
+          {profileOpen && (
+            <div className="profile-dropdown" role="menu">
+              <button type="button" role="menuitem" onClick={() => setProfileOpen(false)}>
+                Profile
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setLoggedOut(true);
+                  setProfileOpen(false);
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function Header({ region, setRegion, dark, setDark, setMobileOpen, onRefresh, isRefreshing }: any) {
+  const { status } = useNetwork();
+  const isOnline = status === "online";
+
+  return (
+    <header className="topbar">
+      <div className="mobile-menu">
+        <button className="icon-button" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+          <Menu size={22} />
+        </button>
+      </div>
+      <div className="title-block">
+        <h1>Incidents & Field Reports</h1>
+        <p>Capture, verify and monitor road accessibility disruptions across NER.</p>
+      </div>
+      <div className="header-actions">
+        <button
+          className="outline-button hidden sm:flex"
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          title="Refresh incident data from server"
+        >
+          <RefreshCw size={14} className={isRefreshing ? "animate-spin text-teal-600" : ""} />
+          <span>Refresh</span>
+        </button>
+        <div className="select-wrap">
+          <MapIcon size={16} />
+          <select value={region} onChange={(e) => setRegion(e.target.value)}>
+            {regions.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} />
+        </div>
+        <span className={`system-status ${isOnline ? "online" : "offline"}`}>
+          <i />
+          {isOnline ? "Supabase Connected" : "Offline Mode"}
+        </span>
+        <button
+          className="icon-button"
+          onClick={() => setDark(!dark)}
+          aria-label="Toggle dark mode"
+        >
+          {dark ? <Sun size={19} /> : <Moon size={19} />}
+        </button>
+        <div className="header-avatar">LA</div>
+      </div>
+    </header>
+  );
+}
+
+function Kpis({ records }: { records: IncidentRecord[] }) {
+  const total = records.length;
+  const active = records.filter((r) => r.status === "Active").length;
+  const critical = records.filter((r) => r.severity === "Critical").length;
+  const underVerification = records.filter((r) => r.status === "Under Verification").length;
+  const resolved = records.filter((r) => r.status === "Resolved").length;
+
+  const cards = [
+    { label: "Total Incidents", value: total, note: "All registered reports", Icon: FileText, theme: "blue" },
+    { label: "Active Incidents", value: active, note: "Affecting routes", Icon: AlertTriangle, theme: "orange" },
+    { label: "Critical", value: critical, note: "Immediate response required", Icon: AlertTriangle, theme: "red" },
+    { label: "Under Verification", value: underVerification, note: "Field review queued", Icon: ShieldCheck, theme: "amber" },
+    { label: "Resolved", value: resolved, note: "Corridors restored", Icon: CheckCircle2, theme: "green" },
+  ];
+
+  return (
+    <div className="kpi-grid incident-kpis" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+      {cards.map(({ label, value, note, Icon, theme }) => (
+        <div className="kpi-card" key={label}>
+          <div className="kpi-top">
+            <span
+              className={`kpi-icon ${
+                theme === "red"
+                  ? "text-red-600 bg-red-50"
+                  : theme === "orange"
+                  ? "text-orange-600 bg-orange-50"
+                  : theme === "green"
+                  ? "text-emerald-600 bg-emerald-50"
+                  : theme === "amber"
+                  ? "text-amber-600 bg-amber-50"
+                  : "text-blue-600 bg-blue-50"
+              }`}
+            >
+              <Icon size={18} />
+            </span>
+            <span className="muted">Live Status</span>
+          </div>
+          <div className="kpi-value">{value}</div>
+          <div className="kpi-label">{label}</div>
+          <div className="kpi-footer">
+            <span className={`dot ${theme}`} />
+            <span className="muted">{note}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function IncidentMap({
+  records,
+  onSelect,
+}: {
+  records: IncidentRecord[];
+  onSelect: (i: IncidentRecord) => void;
+}) {
+  return (
+    <section className="panel incident-map-panel">
+      <div className="panel-header">
+        <div>
+          <h2>Live Incident Map</h2>
+          <p>Verified field reports and accessibility disruption points across NER</p>
+        </div>
+        <span className="map-connect">
+          <i /> Connected · Live GIS overlay
+        </span>
+      </div>
+      <div className="incident-map">
+        <div className="map-grid">
+          <div className="district-lines" />
+          <div className="region-shape" />
+          <svg className="routes-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M20 73 C32 62 39 40 47 29 S63 50 70 76" className="route-line route-red" />
+            <path d="M21 73 C33 79 56 79 70 76" className="route-line route-green" />
+            <path d="M47 29 C52 49 58 65 70 76" className="route-line route-yellow" />
+          </svg>
+          {["Guwahati", "Itanagar", "Shillong", "Imphal", "Aizawl", "Kohima", "Agartala", "Gangtok", "Silchar", "Bomdila"].map(
+            (n, i) => (
+              <div
+                className="city"
+                key={n}
+                style={{
+                  left: `${[22, 47, 31, 70, 60, 79, 44, 5, 51, 38][i]}%`,
+                  top: `${[72, 29, 79, 76, 91, 56, 94, 67, 84, 41][i]}%`,
+                }}
+              >
+                <i />
+                {n}
+              </div>
+            )
+          )}
+          {records.map((i) => {
+            const Icon = iconFor(i.type);
+            return (
+              <button
+                key={i.id}
+                className={`incident-pin ${sevColor(i.severity)}`}
+                style={{ left: `${i.x}%`, top: `${i.y}%` }}
+                onClick={() => onSelect(i)}
+                aria-label={`View ${i.type} at ${i.location}`}
+                title={`${i.type} (${i.severity}) — ${i.location}`}
+              >
+                <Icon size={14} />
+              </button>
+            );
+          })}
+        </div>
+        <div className="map-controls">
+          <button>+</button>
+          <button>−</button>
+          <button>
+            <MapPin size={14} />
+          </button>
+          <button>□</button>
+        </div>
+        <div className="incident-map-legend">
+          <strong>SEVERITY</strong>
+          <span>
+            <i className="legend-critical" />
+            Critical
+          </span>
+          <span>
+            <i className="legend-orange" />
+            High
+          </span>
+          <span>
+            <i className="legend-yellow" />
+            Medium
+          </span>
+          <span>
+            <i className="legend-green" />
+            Low
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReportModal({
+  close,
+  onCreated,
+}: {
+  close: () => void;
+  onCreated: (incident: IncidentRecord, toastMsg: string) => void;
+}) {
+  const { status } = useNetwork();
+  const isOffline = status === "offline";
+
+  // Form State
+  const [incidentType, setIncidentType] = useState<IncidentType>("obstruction");
+  const [severity, setSeverity] = useState<SeverityLevel>("high");
+  const [locationName, setLocationName] = useState("Near Bhalukpong, NH-13 Corridor");
+  const [latitude, setLatitude] = useState(27.0125);
+  const [longitude, setLongitude] = useState(92.6412);
+  const [description, setDescription] = useState(
+    "Road accessibility restricted due to debris and surface damage following rainfall."
+  );
+  const [isBlocking, setIsBlocking] = useState(true);
+
+  // Photo State
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // GPS & Submission State
+  const [isLocating, setIsLocating] = useState(false);
+  const [geoStatus, setGeoStatus] = useState("GPS Acquired · 27.0125° N, 92.6412° E");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStep, setSubmitStep] = useState<"idle" | "uploading" | "saving">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhotoError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate type
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setPhotoError("Please select a valid image file (JPG, PNG, or WEBP).");
+      return;
+    }
+
+    // Validate size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("Photo size exceeds 5MB limit. Please upload a smaller image.");
+      return;
+    }
+
+    setPhotoFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreview(previewUrl);
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+      setPhotoPreview(null);
+    }
+  };
+
+  const handleCaptureGps = () => {
+    setIsLocating(true);
+    setGeoStatus("Requesting GPS sensor...");
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = Number(pos.coords.latitude.toFixed(4));
+          const lng = Number(pos.coords.longitude.toFixed(4));
+          setLatitude(lat);
+          setLongitude(lng);
+          setGeoStatus(`GPS Locked: ${lat}° N, ${lng}° E`);
+          setIsLocating(false);
+        },
+        () => {
+          // Fallback to regional coordinates if denied
+          setLatitude(27.0125);
+          setLongitude(92.6412);
+          setGeoStatus("Defaulted to Bhalukpong Corridor (27.0125° N, 92.6412° E)");
+          setIsLocating(false);
+        },
+        { timeout: 8000 }
+      );
+    } else {
+      setGeoStatus("Defaulted to Regional Point (27.0125° N, 92.6412° E)");
+      setIsLocating(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      let uploadedPhotoUrl: string | undefined = undefined;
+
+      // STEP 1: Upload photo if selected
+      if (photoFile) {
+        setSubmitStep("uploading");
+        const formData = new FormData();
+        formData.append("photo", photoFile);
+
+        const uploadRes = await fetch("/api/incidents/upload-photo", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errData.message || "Failed to upload photo evidence to Supabase Storage");
+        }
+
+        const uploadData = await uploadRes.json();
+        if (uploadData.success && uploadData.photo_url) {
+          uploadedPhotoUrl = uploadData.photo_url;
+        }
+      }
+
+      // STEP 2: Submit incident payload to backend
+      setSubmitStep("saving");
+      const payload: CreateIncidentRequest = {
+        incident_type: incidentType,
+        severity: severity,
+        location_name: locationName.trim() || "NER Transport Corridor",
+        latitude: Number(latitude) || 27.0125,
+        longitude: Number(longitude) || 92.6412,
+        description: description.trim() || undefined,
+        photo_url: uploadedPhotoUrl,
+      };
+
+      const res = await fetch("/api/incidents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(
+          errData.message ||
+            (errData.errors ? errData.errors.join(", ") : "Failed to record incident")
+        );
+      }
+
+      const resData: CreateIncidentResponse = await res.json();
+      if (resData.success && resData.incident) {
+        const newRecord = mapApiIncidentToRecord(resData.incident);
+        onCreated(
+          newRecord,
+          uploadedPhotoUrl
+            ? "Incident reported & photo stored in Supabase successfully!"
+            : "Incident reported successfully!"
+        );
+        close();
+      } else {
+        throw new Error(resData.message || "Incident creation failed");
+      }
+    } catch (err: any) {
+      console.warn("API Submission Error:", err);
+      if (isOffline || !navigator.onLine) {
+        // Safe offline queue fallback
+        const offlineId = `INC-${Date.now().toString().slice(-4)}`;
+        const offlineRecord: IncidentRecord = {
+          id: offlineId,
+          type:
+            incidentType === "obstruction"
+              ? "Landslide"
+              : incidentType === "flooding"
+              ? "Flood"
+              : incidentType === "accident"
+              ? "Accident"
+              : "Road Damage",
+          severity:
+            severity === "critical"
+              ? "Critical"
+              : severity === "high"
+              ? "High"
+              : severity === "low"
+              ? "Low"
+              : "Medium",
+          x: 38,
+          y: 45,
+          location: locationName.trim() || "Offline Captured Corridor",
+          coordinates: `${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E`,
+          description: description.trim() || "Captured locally in offline mode.",
+          reportedBy: "Field Mobile Unit (Offline)",
+          reportedAt: "Just now (Queued)",
+          status: "Under Verification",
+          affectedRoute: "NER Transport Corridor",
+          affectedVehicles: [],
+          estimatedDelay: severity === "critical" ? "+60 min" : "+30 min",
+          disruptionProbability: severity === "critical" ? 80 : 50,
+          confidence: 85,
+          photo: photoPreview || undefined,
+        };
+        onCreated(offlineRecord, "Saved locally (Offline Mode) — Queued for sync when online.");
+        close();
+      } else {
+        setErrorMessage(err.message || "Failed to submit report. Please retry.");
+      }
+    } finally {
+      setIsSubmitting(false);
+      setSubmitStep("idle");
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={close}>
+      <div className="compare-modal incident-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={close} aria-label="Close modal">
+          <X size={19} />
+        </button>
+        <span className="eyebrow red">FIELD REPORTING · DIRECT SUPABASE FLOW</span>
+        <h2>Report Road Incident</h2>
+        <p className="modal-subtitle">
+          Submit verified field intelligence with location, severity and photo evidence directly to
+          operations.
+        </p>
+
+        {errorMessage && (
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#991b1b",
+              borderRadius: "6px",
+              padding: "8px 12px",
+              fontSize: "11px",
+              marginBottom: "12px",
+            }}
+          >
+            <strong>Submission Notice:</strong> {errorMessage}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="incident-form">
+          <label>
+            Incident Type
+            <select
+              value={incidentType}
+              onChange={(e) => setIncidentType(e.target.value as IncidentType)}
+            >
+              <option value="obstruction">Landslide / Road Obstruction</option>
+              <option value="road_damage">Road Surface Damage</option>
+              <option value="flooding">Flood / Waterlogging</option>
+              <option value="accident">Vehicle Accident / Collision</option>
+              <option value="pothole">Severe Pothole / Crater</option>
+              <option value="other">Other Transport Hazard</option>
+            </select>
+          </label>
+
+          <label>
+            Severity Level
+            <select
+              value={severity}
+              onChange={(e) => setSeverity(e.target.value as SeverityLevel)}
+            >
+              <option value="critical">Critical (Immediate Route Blockage)</option>
+              <option value="high">High (Major Delays / Caution)</option>
+              <option value="medium">Medium (Passable with Care)</option>
+              <option value="low">Low (Minor Surface Irregularity)</option>
+            </select>
+          </label>
+
+          <label className="wide">
+            Location Name / Landmark
+            <input
+              type="text"
+              placeholder="e.g. Near Bhalukpong, NH-13 Km 42"
+              value={locationName}
+              onChange={(e) => setLocationName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            GPS Coordinates
+            <button
+              type="button"
+              className="location-input"
+              onClick={handleCaptureGps}
+              disabled={isLocating}
+            >
+              {isLocating ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+              {isLocating ? "Acquiring GPS..." : "Acquire Current GPS"}
+            </button>
+            <small className="geo-confirmation">
+              <MapPin size={12} /> {geoStatus}
+            </small>
+          </label>
+
+          <label>
+            Report Timestamp
+            <input
+              type="text"
+              value={new Date().toLocaleString("en-IN", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+              readOnly
+            />
+          </label>
+
+          <label className="wide">
+            Incident Description & Road Impact
+            <textarea
+              placeholder="Describe the condition, passability, lane availability..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </label>
+
+          {/* Photo Evidence Section */}
+          <div className="photo-evidence wide">
+            <div className="photo-evidence-head">
+              <strong className="flex items-center gap-1">
+                <Camera size={13} className="text-teal-600" /> Photo Evidence (Supabase Storage)
+              </strong>
+              <small>JPG, PNG, WEBP · Max 5 MB</small>
+            </div>
+
+            {photoError && (
+              <span style={{ color: "#b91c1c", fontSize: "10px", marginTop: "2px" }}>
+                {photoError}
+              </span>
+            )}
+
+            {!photoPreview ? (
+              <label className="upload-box">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoSelect}
+                />
+                <Upload size={20} className="text-teal-600" />
+                <strong>Select or Drag Photo Evidence</strong>
+                <small>Image will be uploaded to Supabase Storage and linked to report</small>
+              </label>
+            ) : (
+              <div className="photo-previews" style={{ gridTemplateColumns: "1fr" }}>
+                <div
+                  className="photo-preview"
+                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px" }}
+                >
+                  <img
+                    src={photoPreview}
+                    alt="Evidence Preview"
+                    style={{ width: "70px", height: "55px", borderRadius: "6px", objectFit: "cover" }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span
+                      style={{ fontWeight: 600, fontSize: "11px", color: "#1e293b" }}
+                      title={photoFile?.name}
+                    >
+                      {photoFile?.name}
+                    </span>
+                    <small style={{ color: "#64748b", display: "block", fontSize: "10px" }}>
+                      {photoFile ? `${(photoFile.size / 1024).toFixed(1)} KB` : ""} · Ready for Storage
+                    </small>
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      style={{ color: "#b91c1c", fontSize: "11px", textDecoration: "underline", marginTop: "2px" }}
+                    >
+                      Remove photo
+                    </button>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      background: "#e8f7f6",
+                      color: "#247c79",
+                      padding: "3px 8px",
+                      borderRadius: "4px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Evidence Attached
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <label className="check-row wide">
+            <input
+              type="checkbox"
+              checked={isBlocking}
+              onChange={(e) => setIsBlocking(e.target.checked)}
+            />
+            Mark as actively obstructing transport corridor
+          </label>
+
+          <div className="reporter-line wide">
+            <span>Reporter</span>
+            <b>Logistics Field Operator · Mobile Operations</b>
+          </div>
+
+          <div className="modal-footer wide">
+            <p>Report will be verified and displayed immediately on the operations dashboard.</p>
+            <button type="submit" className="primary-button" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={15} className="animate-spin mr-1" />
+                  {submitStep === "uploading"
+                    ? "Uploading Photo to Supabase..."
+                    : "Saving Incident..."}
+                </>
+              ) : (
+                <>
+                  Submit Incident <ChevronRight size={15} />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Details({
+  incident,
+  close,
+  onUpdateStatus,
+}: {
+  incident: IncidentRecord;
+  close: () => void;
+  onUpdateStatus: (s: IncidentRecord["status"]) => void;
+}) {
+  const Icon = iconFor(incident.type);
+
+  return (
+    <div className="drawer-overlay" onClick={close}>
+      <aside className="incident-drawer" onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-head">
+          <div>
+            <span className="eyebrow red">INCIDENT DETAILS</span>
+            <h2>{incident.id}</h2>
+            <p>
+              {incident.type} · {incident.location}
+            </p>
+          </div>
+          <button className="icon-button" onClick={close} aria-label="Close drawer">
+            <X size={19} />
+          </button>
+        </div>
+
+        <div className="incident-drawer-status">
+          <span className={`incident-severity ${sevColor(incident.severity)}`}>
+            <Icon size={14} />
+            {incident.severity} Severity
+          </span>
+          <span className="status-pill bg-amber-50 text-amber-700">{incident.status}</span>
+        </div>
+
+        <div className="mini-location">
+          <MapPin size={14} />
+          <span>{incident.coordinates}</span>
+          <div className="mini-map">
+            <div className="mini-road" />
+            <i />
+          </div>
+        </div>
+
+        {/* Verified Photo Evidence Section */}
+        {incident.photo && (
+          <div style={{ margin: "14px 0" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "6px",
+              }}
+            >
+              <strong
+                style={{
+                  fontSize: "11px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  color: "#334155",
+                }}
+              >
+                <Camera size={13} className="text-teal-600" /> Attached Photo Evidence
+              </strong>
+              <span
+                style={{
+                  fontSize: "9px",
+                  padding: "2px 6px",
+                  background: "#e8f7f6",
+                  color: "#247c79",
+                  borderRadius: "4px",
+                  fontWeight: 600,
+                  border: "1px solid #b8dfdc",
+                }}
+              >
+                Verified Storage
+              </span>
+            </div>
+            <div
+              style={{
+                borderRadius: "8px",
+                overflow: "hidden",
+                border: "1px solid #e2e8f0",
+                background: "#0f172a",
+              }}
+            >
+              <img
+                src={
+                  incident.photo.startsWith("http")
+                    ? incident.photo
+                    : `https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80`
+                }
+                alt="Incident Evidence"
+                style={{ width: "100%", maxHeight: "200px", objectFit: "cover", display: "block" }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80";
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="incident-detail-grid">
+          <span>
+            Reported by<b>{incident.reportedBy}</b>
+          </span>
+          <span>
+            Reported time<b>{incident.reportedAt}</b>
+          </span>
+          <span>
+            Affected corridor<b>{incident.affectedRoute}</b>
+          </span>
+          <span>
+            Estimated delay<b>{incident.estimatedDelay}</b>
+          </span>
+          <span>
+            Disruption impact<b>{incident.disruptionProbability}% probability</b>
+          </span>
+          <span>
+            Model confidence<b>{incident.confidence}%</b>
+          </span>
+        </div>
+
+        <p className="incident-description" style={{ marginTop: "12px", lineHeight: "1.5" }}>
+          {incident.description}
+        </p>
+
+        {/* Operational Verification Workflow */}
+        <div className="verification" style={{ marginTop: "16px" }}>
+          <strong>Operational Workflow Status</strong>
+          <div>
+            <span className="done">Reported</span>
+            <span className={incident.status !== "Under Verification" ? "done" : "current"}>
+              Under Verification
+            </span>
+            <span className={incident.status === "Verified" || incident.status === "Resolved" ? "done" : ""}>
+              Verified
+            </span>
+            <span className={incident.status === "Resolved" ? "done" : ""}>Resolved</span>
+          </div>
+        </div>
+
+        <div className="drawer-actions" style={{ marginTop: "16px" }}>
+          <button className="primary-button" onClick={() => onUpdateStatus("Verified")}>
+            Verify Incident
+          </button>
+          <button className="outline-button" onClick={() => onUpdateStatus("Resolved")}>
+            Mark Resolved
+          </button>
+          <button className="outline-button" onClick={() => onUpdateStatus("Rejected")}>
+            Reject Report
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+export default function Incidents() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [region, setRegion] = useState(regions[0]);
+  const [dark, setDark] = useState(false);
+
+  // Filters & Data
+  const [filter, setFilter] = useState("All");
+  const [type, setType] = useState("All Types");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<IncidentRecord | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Incidents state initialized with seed data
+  const [records, setRecords] = useState<IncidentRecord[]>(seedIncidents);
+
+  // Fetch real incidents from Supabase backend on mount
+  const fetchIncidents = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch("/api/incidents");
+      if (res.ok) {
+        const data: GetIncidentsResponse = await res.json();
+        if (data.success && Array.isArray(data.incidents) && data.incidents.length > 0) {
+          const apiRecords = data.incidents.map(mapApiIncidentToRecord);
+          // Combine API records with seed incidents, avoiding duplicate IDs
+          const apiIds = new Set(apiRecords.map((r) => r.id));
+          const nonDuplicateSeed = seedIncidents.filter((s) => !apiIds.has(s.id));
+          setRecords([...apiRecords, ...nonDuplicateSeed]);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch incidents from backend, using seed data:", err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncidents();
+  }, []);
+
+  const handleIncidentCreated = (newIncident: IncidentRecord, message: string) => {
+    setRecords((prev) => [newIncident, ...prev]);
+    setSelected(newIncident);
+    setToastMessage(message);
+  };
+
+  const handleUpdateStatus = (newStatus: IncidentRecord["status"]) => {
+    if (!selected) return;
+    const updated = { ...selected, status: newStatus };
+    setRecords((prev) => prev.map((r) => (r.id === selected.id ? updated : r)));
+    setSelected(updated);
+    setToastMessage(`Incident status updated to "${newStatus}"`);
+  };
+
+  const filtered = useMemo(() => {
+    return records.filter((i) => {
+      const matchesFilter =
+        filter === "All" ||
+        i.status === filter ||
+        (filter === "Critical" && i.severity === "Critical") ||
+        (filter === "Active" && (i.status === "Active" || i.status === "Verified"));
+      const matchesType = type === "All Types" || i.type === type;
+      const matchesSearch =
+        !search ||
+        `${i.id} ${i.location} ${i.type} ${i.reportedBy}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+      return matchesFilter && matchesType && matchesSearch;
+    });
+  }, [records, filter, type, search]);
+
+  return (
+    <div className={dark ? "app-shell dark-mode" : "app-shell"}>
+      <Sidebar {...{ collapsed, setCollapsed, mobileOpen, setMobileOpen }} />
+      <main className="main-shell">
+        <Header
+          {...{
+            region,
+            setRegion,
+            dark,
+            setDark,
+            setMobileOpen,
+            onRefresh: fetchIncidents,
+            isRefreshing,
+          }}
+        />
+
+        <div className="dashboard incidents-dashboard">
+          {/* Intro Section */}
+          <div className="dashboard-intro">
+            <div>
+              <span className="eyebrow blue">FIELD OPERATIONS · LIVE DISRUPTIONS</span>
+              <h2>Field Incident Reporting</h2>
+              <p>
+                Report road disruptions, landslides and structural damage with GPS coordinates and
+                verified photo evidence.
+              </p>
+            </div>
+            <div className="incident-head-actions">
+              <button
+                className="outline-button"
+                onClick={fetchIncidents}
+                disabled={isRefreshing}
+                title="Sync with database"
+              >
+                <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} /> Refresh
+              </button>
+              <button className="primary-button" onClick={() => setReportModalOpen(true)}>
+                <AlertTriangle size={14} /> Report Incident
+              </button>
+            </div>
+          </div>
+
+          {/* 1. Essential Incident Stats / KPI Summary */}
+          <Kpis records={records} />
+
+          {/* 2. Interactive Incident Map */}
+          <IncidentMap records={records} onSelect={setSelected} />
+
+          {/* 3. Recent / Active Incidents List (Main Focus) */}
+          <section className="panel incidents-list">
+            <div className="panel-header">
+              <div>
+                <h2>Recent & Active Incidents</h2>
+                <p>
+                  Showing {filtered.length} verified and pending incidents across the region
+                </p>
+              </div>
+              <div className="incident-filters">
+                <label className="search-box">
+                  <Search size={15} />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search ID, location, corridor or type..."
+                  />
+                </label>
+                <select value={type} onChange={(e) => setType(e.target.value)}>
+                  <option>All Types</option>
+                  {[
+                    "Road Damage",
+                    "Landslide",
+                    "Flood",
+                    "Accident",
+                    "Road Blockage",
+                    "Bridge Damage",
+                    "Traffic",
+                  ].map((x) => (
+                    <option key={x}>{x}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="filter-chips incident-chips">
+              {["All", "Active", "Critical", "Under Verification", "Resolved"].map((x) => (
+                <button
+                  key={x}
+                  className={filter === x ? "active" : ""}
+                  onClick={() => setFilter(x)}
+                >
+                  {x}
+                </button>
+              ))}
+            </div>
+
+            <div className="table-wrap">
+              <table className="incident-table">
+                <thead>
+                  <tr>
+                    <th>Incident ID</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Severity</th>
+                    <th>Photo Evidence</th>
+                    <th>Reported By</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
+                        No incidents match the selected filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((i) => {
+                      const Icon = iconFor(i.type);
+                      return (
+                        <tr
+                          key={i.id}
+                          onClick={() => setSelected(i)}
+                          style={{ cursor: "pointer" }}
+                          className={selected?.id === i.id ? "bg-teal-50/40" : ""}
+                        >
+                          <td>
+                            <strong className="text-teal-700 dark:text-teal-400">{i.id}</strong>
+                          </td>
+                          <td>
+                            <span className="flex items-center gap-1.5 font-medium">
+                              <Icon size={14} className="text-slate-500" />
+                              {i.type}
+                            </span>
+                          </td>
+                          <td>{i.location}</td>
+                          <td>
+                            <span className={`incident-severity ${sevColor(i.severity)}`}>
+                              {i.severity}
+                            </span>
+                          </td>
+                          <td>
+                            {i.photo ? (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "11px",
+                                  color: "#0f766e",
+                                  background: "#f0fdfa",
+                                  border: "1px solid #ccfbf1",
+                                  padding: "2px 6px",
+                                  borderRadius: "4px",
+                                  fontWeight: 600,
+                                }}
+                                title="Photo evidence stored in Supabase"
+                              >
+                                <Camera size={12} />
+                                Photo
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: "11px", color: "#94a3b8" }}>No photo</span>
+                            )}
+                          </td>
+                          <td>{i.reportedBy}</td>
+                          <td>{i.reportedAt}</td>
+                          <td>
+                            <span
+                              className={`status-pill ${
+                                i.status === "Resolved"
+                                  ? "bg-green-50 text-green-700"
+                                  : i.status === "Verified" || i.status === "Active"
+                                  ? "bg-blue-50 text-blue-700"
+                                  : "bg-amber-50 text-amber-700"
+                              }`}
+                            >
+                              {i.status}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className="view-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelected(i);
+                              }}
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* 4. Streamlined Recent Field Submissions Feed */}
+          <section className="panel field-reports" style={{ marginTop: "20px" }}>
+            <div className="panel-header">
+              <div>
+                <h2>Recent Field Submissions</h2>
+                <p>Latest incident submissions verified by mobile operators</p>
+              </div>
+              <span className="status-pill bg-blue-50 text-blue-700">Live Field Stream</span>
+            </div>
+            <div style={{ display: "grid", gap: "10px", padding: "16px" }}>
+              {fieldReports.map((r) => (
+                <div
+                  className="field-report"
+                  key={r.location}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 14px",
+                    background: "#f8fafc",
+                    borderRadius: "8px",
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span className="field-photo" style={{ padding: "8px", background: "#e2e8f0", borderRadius: "6px" }}>
+                      <Camera size={16} className="text-teal-700" />
+                    </span>
+                    <span>
+                      <strong style={{ fontSize: "12px", color: "#1e293b", display: "block" }}>
+                        {r.type} · {r.location}
+                      </strong>
+                      <small style={{ color: "#64748b", fontSize: "11px" }}>
+                        {r.reporter} · {r.time} · {r.photo}
+                      </small>
+                    </span>
+                  </div>
+                  <span className="status-pill bg-amber-50 text-amber-700">{r.status}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Report Modal with Direct Photo Upload & Supabase Integration */}
+      {reportModalOpen && (
+        <ReportModal
+          close={() => setReportModalOpen(false)}
+          onCreated={handleIncidentCreated}
+        />
+      )}
+
+      {/* Details Drawer */}
+      {selected && (
+        <Details
+          incident={selected}
+          close={() => setSelected(null)}
+          onUpdateStatus={handleUpdateStatus}
+        />
+      )}
+
+      {/* Success Toast */}
+      {toastMessage && (
+        <div className="toast-success" style={{ zIndex: 1000 }}>
+          <CheckCircle2 size={16} className="text-emerald-500" />
+          <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage("")} aria-label="Dismiss toast">
+            <X size={13} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
