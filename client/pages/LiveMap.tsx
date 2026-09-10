@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  Activity,
   AlertTriangle,
   Bell,
   BrainCircuit,
@@ -452,17 +451,9 @@ function SelectedTargetDetail({
         </button>
       </div>
 
-      <div className="detail-grid">
+      <div className="detail-grid" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }}>
         <div className="detail-cell">
-          <span>Corridor / Location</span>
-          <strong>{target.location}</strong>
-        </div>
-        <div className="detail-cell">
-          <span>Hazard / Condition</span>
-          <strong>{target.condition}</strong>
-        </div>
-        <div className="detail-cell">
-          <span>Operational Status</span>
+          <span>Status</span>
           <strong>{target.status}</strong>
         </div>
         <div className="detail-cell">
@@ -481,8 +472,8 @@ function SelectedTargetDetail({
           </strong>
         </div>
         <div className="detail-cell">
-          <span>Telemetry &amp; Source</span>
-          <strong>{target.lastUpdated}</strong>
+          <span>Condition</span>
+          <strong>{target.condition}</strong>
         </div>
       </div>
 
@@ -878,19 +869,13 @@ function GisMap({
         {/* Canvas Bottom Status Bar */}
         <div className="map-status-bar">
           <span>
-            <i /> GIS Telemetry: <b>Active (Simulated Prototype)</b>
-          </span>
-          <span>
-            Updated <b>30 sec ago</b>
+            <i /> GIS Telemetry: <b>Active (Prototype)</b>
           </span>
           <span>
             Fleet <b>128 vehicles</b>
           </span>
           <span>
-            Monitored Corridors <b>342</b>
-          </span>
-          <span>
-            Hazards <b>23</b>
+            Hazards <b>23 active</b>
           </span>
         </div>
       </div>
@@ -1039,33 +1024,6 @@ export default function LiveMap() {
         <Header {...{ region, setRegion, dark, setDark, setMobileOpen }} />
 
         <div className="dashboard live-dashboard">
-          {/* Header Intro */}
-          <div className="dashboard-intro">
-            <div>
-              <span className="eyebrow blue">GIS OPERATIONS · NER LOGISTICS NETWORK</span>
-              <h2>Regional Live Map</h2>
-              <p>
-                Visual operational monitoring for vehicle convoys, road accessibility, and hazard risks across the North Eastern Region.
-              </p>
-            </div>
-            <div className="date-card">
-              <div className="date-icon">
-                <Activity size={18} />
-              </div>
-              <div>
-                <strong>Prototype GIS View</strong>
-                <span>
-                  <i /> Simulated Telemetry
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Desired Page Structure:
-              1. Compact map toolbar & filters
-              2. Large operational map
-              3. Compact legend
-              4. Selected location / incident detail */}
           <div className={`map-page-grid ${emergency ? "emergency-active" : ""}`}>
             {/* Full-width Operational Map Panel */}
             <section className="panel live-map-panel">
