@@ -8,10 +8,12 @@ import {
   CloudRain,
   Clock3,
   Gauge,
+  Leaf,
   LayoutDashboard,
   Map as MapIcon,
   Menu,
   Moon,
+  Package,
   PanelLeftClose,
   PanelLeftOpen,
   RefreshCw,
@@ -178,9 +180,26 @@ function Header({ region, setRegion, dark, setDark, setMobileOpen }: any) {
 }
 
 /* ─── 1. Route Planner ─── */
-function Planner({ onAnalyze, emergency, setEmergency }: any) {
+function Planner({
+  onAnalyze,
+  emergency,
+  setEmergency,
+  cargoType,
+  setCargoType,
+}: any) {
   const [origin, setOrigin] = useState("Guwahati");
   const [destination, setDestination] = useState("Itanagar");
+
+  const cargoOptions = [
+    { value: "medical", label: "Medical Supplies", priority: "CRITICAL" },
+    { value: "emergency", label: "Emergency Relief / Oxygen", priority: "CRITICAL" },
+    { value: "food", label: "Food & Rations", priority: "HIGH" },
+    { value: "agriculture", label: "Agriculture Produce", priority: "NORMAL" },
+    { value: "construction", label: "Construction Material", priority: "NORMAL" },
+    { value: "general", label: "General Cargo", priority: "NORMAL" },
+  ];
+
+  const activeCargo = cargoOptions.find((c) => c.value === cargoType) || cargoOptions[0];
 
   return (
     <section className="panel planner">
@@ -220,17 +239,39 @@ function Planner({ onAnalyze, emergency, setEmergency }: any) {
           </select>
         </label>
         <label>
-          Priority
-          <select>
-            <option>Normal</option>
-            <option>High Priority</option>
-            <option>Emergency</option>
+          Cargo Type
+          <select value={cargoType} onChange={(e) => setCargoType(e.target.value)}>
+            {cargoOptions.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label} [{c.priority}]
+              </option>
+            ))}
           </select>
         </label>
         <button className="primary-button analyze-button" onClick={onAnalyze}>
           <BrainCircuit size={15} /> Analyze Route
         </button>
       </div>
+      {activeCargo.priority === "CRITICAL" && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#1e0e3e",
+            border: "1px solid #7c3aed",
+            borderRadius: "8px",
+            padding: "8px 14px",
+            marginTop: "12px",
+          }}
+        >
+          <Package size={15} style={{ color: "#c084fc" }} />
+          <span style={{ fontSize: "11px", color: "#ddd6fe" }}>
+            <strong style={{ color: "#c084fc" }}>Essential-Supply Priority Protocol active:</strong>{" "}
+            {activeCargo.label} shipment detected. Safer route will be prioritised even if travel time is slightly higher.
+          </span>
+        </div>
+      )}
       <button
         className={`emergency-button route-emergency ${emergency ? "active" : ""}`}
         onClick={() => setEmergency(!emergency)}
@@ -238,6 +279,343 @@ function Planner({ onAnalyze, emergency, setEmergency }: any) {
         <AlertTriangle size={14} />{" "}
         {emergency ? "Emergency Route Active" : "Emergency Route Mode"}
       </button>
+    </section>
+  );
+}
+
+/* ─── Essential-Supply Priority Decision Panel ─── */
+function EssentialSupplyCard({ cargoType }: { cargoType: string }) {
+  const cargoLabels: Record<string, { label: string; priority: string; color: string }> = {
+    medical: { label: "Medical Supplies", priority: "CRITICAL", color: "#f87171" },
+    emergency: { label: "Emergency Relief / Oxygen", priority: "CRITICAL", color: "#f87171" },
+    food: { label: "Food & Rations", priority: "HIGH", color: "#fbbf24" },
+    agriculture: { label: "Agriculture Produce", priority: "NORMAL", color: "#4ade80" },
+    construction: { label: "Construction Material", priority: "NORMAL", color: "#4ade80" },
+    general: { label: "General Cargo", priority: "NORMAL", color: "#4ade80" },
+  };
+
+  const cargo = cargoLabels[cargoType] || cargoLabels["general"];
+  const isCritical = cargo.priority === "CRITICAL";
+  const isHigh = cargo.priority === "HIGH";
+
+  return (
+    <section className="panel" style={{ marginTop: "18px" }}>
+      <div className="panel-header">
+        <div>
+          <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Package size={18} style={{ color: "#7c3aed" }} />
+            Essential-Supply Priority
+          </h2>
+          <p>PATHNOVA adjusts route recommendation based on cargo criticality.</p>
+        </div>
+        <span
+          className="status-pill"
+          style={{
+            background: isCritical ? "#fef2f2" : isHigh ? "#fffbeb" : "#f0fdf4",
+            color: isCritical ? "#b91c1c" : isHigh ? "#92400e" : "#15803d",
+            fontWeight: 700,
+          }}
+        >
+          {cargo.priority} PRIORITY
+        </span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+        <Package size={14} style={{ color: cargo.color }} />
+        <span style={{ fontSize: "13px", color: "#334155" }}>
+          Cargo: <strong style={{ color: cargo.color }}>{cargo.label}</strong>
+        </span>
+      </div>
+
+      {isCritical && (
+        <div
+          style={{
+            background: "#fff7ed",
+            border: "1px solid #fdba74",
+            borderRadius: "8px",
+            padding: "12px 14px",
+            marginBottom: "16px",
+            fontSize: "13px",
+            color: "#9a3412",
+          }}
+        >
+          <strong>⚕ Protect Critical Medical Delivery:</strong> This shipment carries life-critical
+          supplies. PATHNOVA recommends the safer corridor even if travel time is slightly higher.
+        </div>
+      )}
+
+      {/* Route comparison */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+        {/* Route A — Recommended */}
+        <div
+          style={{
+            background: isCritical ? "#f0fdf4" : "#f8fafc",
+            border: isCritical ? "2px solid #15803d" : "1px solid #e2e8f0",
+            borderRadius: "10px",
+            padding: "14px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <strong style={{ fontSize: "13px" }}>Route A</strong>
+            {isCritical && (
+              <span style={{ fontSize: "9px", background: "#15803d", color: "#fff", borderRadius: "10px", padding: "2px 8px", fontWeight: 700 }}>
+                RECOMMENDED
+              </span>
+            )}
+          </div>
+          {[
+            ["Risk", "18%", "#15803d"],
+            ["ETA", isCritical ? "4h 35m" : "4h 35m", "#334155"],
+            ["Disruption", "Low (15%)", "#15803d"],
+            ["Landslide Risk", "None", "#15803d"],
+          ].map(([l, v, c]) => (
+            <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "4px" }}>
+              <span style={{ color: "#64748b" }}>{l}</span>
+              <strong style={{ color: c }}>{v}</strong>
+            </div>
+          ))}
+        </div>
+        {/* Route B */}
+        <div
+          style={{
+            background: isCritical ? "#fff1f2" : "#f8fafc",
+            border: isCritical ? "1.5px solid #f87171" : "1px solid #e2e8f0",
+            borderRadius: "10px",
+            padding: "14px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <strong style={{ fontSize: "13px" }}>Route B</strong>
+            {isCritical && (
+              <span style={{ fontSize: "9px", background: "#fee2e2", color: "#b91c1c", borderRadius: "10px", padding: "2px 8px", fontWeight: 700 }}>
+                HIGH RISK
+              </span>
+            )}
+          </div>
+          {[
+            ["Risk", "82%", "#b91c1c"],
+            ["ETA", "4h 10m (25m faster)", "#334155"],
+            ["Disruption", "High (68%)", "#b91c1c"],
+            ["Landslide Risk", "Significant", "#b91c1c"],
+          ].map(([l, v, c]) => (
+            <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "4px" }}>
+              <span style={{ color: "#64748b" }}>{l}</span>
+              <strong style={{ color: c }}>{v}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: isCritical ? "#1e3a5f" : "#f1f5f9",
+          border: `1px solid ${isCritical ? "#3b82f6" : "#e2e8f0"}`,
+          borderRadius: "8px",
+          padding: "10px 14px",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "8px",
+        }}
+      >
+        <BrainCircuit size={15} style={{ color: isCritical ? "#93c5fd" : "#94a3b8", flexShrink: 0, marginTop: "1px" }} />
+        <p style={{ margin: 0, fontSize: "12px", color: isCritical ? "#bfdbfe" : "#475569", lineHeight: "1.5" }}>
+          {isCritical
+            ? `Use Route A — Route B is 25 minutes faster but has 82% disruption risk, making it unsuitable for a ${cargo.label.toLowerCase()} shipment.`
+            : isHigh
+            ? `Route A recommended due to lower disruption risk for ${cargo.label.toLowerCase()} shipment.`
+            : `Route A provides the best balance of safety and travel time for this shipment.`}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Seasonal Route Intelligence Panel ─── */
+function SeasonalRouteIntelligence() {
+  const [expanded, setExpanded] = useState(true);
+  const season = "Monsoon";
+  const normalRisk = 24;
+  const monsoonRisk = 68;
+
+  return (
+    <section className="panel" style={{ marginTop: "18px" }}>
+      <div
+        className="panel-header"
+        style={{ cursor: "pointer", userSelect: "none" }}
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div>
+          <h2 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Leaf size={18} style={{ color: "#059669" }} />
+            Seasonal Route Intelligence
+          </h2>
+          <p>Historical disruption patterns across NER corridors by season</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span
+            className="status-pill"
+            style={{ background: "#fff7ed", color: "#c2410c", fontWeight: 700 }}
+          >
+            {season.toUpperCase()} ACTIVE
+          </span>
+          <ChevronDown
+            size={16}
+            style={{
+              color: "#64748b",
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          />
+        </div>
+      </div>
+
+      {expanded && (
+        <>
+          {/* Seasonal Risk Comparison */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+            <div
+              style={{
+                background: "#f0fdf4",
+                border: "1px solid #86efac",
+                borderRadius: "10px",
+                padding: "14px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: "10px", color: "#15803d", fontWeight: 700, marginBottom: "4px" }}>NORMAL CONDITIONS</div>
+              <div style={{ fontSize: "28px", fontWeight: 900, color: "#15803d" }}>{normalRisk}%</div>
+              <div style={{ fontSize: "10px", color: "#16a34a" }}>Baseline Risk · Disruption: Low</div>
+            </div>
+            <div
+              style={{
+                background: "#fff7ed",
+                border: "2px solid #f97316",
+                borderRadius: "10px",
+                padding: "14px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: "10px", color: "#c2410c", fontWeight: 700, marginBottom: "4px" }}>MONSOON CONDITIONS</div>
+              <div style={{ fontSize: "28px", fontWeight: 900, color: "#c2410c" }}>{monsoonRisk}%</div>
+              <div style={{ fontSize: "10px", color: "#ea580c" }}>Seasonal Risk · Disruption: High</div>
+            </div>
+          </div>
+
+          {/* Key seasonal risk drivers */}
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginBottom: "8px" }}>MONSOON RISK FACTORS (Historical)</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              {[
+                ["Heavy Rainfall", "+38%", "#3b82f6"],
+                ["Landslide Susceptibility", "+45%", "#f59e0b"],
+                ["Flash Flood Risk", "+25%", "#06b6d4"],
+                ["Road Surface Damage", "+32%", "#ef4444"],
+              ].map(([factor, delta, color]) => (
+                <div
+                  key={factor}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "6px",
+                    padding: "6px 10px",
+                  }}
+                >
+                  <span style={{ fontSize: "10px", color: "#475569" }}>{factor}</span>
+                  <strong style={{ fontSize: "11px", color }}>{delta}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Corridor Seasonal Comparison Table */}
+          <div style={{ marginBottom: "14px" }}>
+            <div style={{ fontSize: "11px", color: "#475569", fontWeight: 700, marginBottom: "8px" }}>CORRIDOR SEASONAL COMPARISON</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {[
+                {
+                  name: "Route A — Tezpur Bypass",
+                  km: "330 km",
+                  normalRisk: "18%",
+                  monsoonRisk: "35%",
+                  disruption: "Moderate",
+                  recommended: true,
+                  disruptionColor: "#d97706",
+                },
+                {
+                  name: "Route B — Bhalukpong Valley",
+                  km: "298 km",
+                  normalRisk: "22%",
+                  monsoonRisk: "68%",
+                  disruption: "High",
+                  recommended: false,
+                  disruptionColor: "#b91c1c",
+                },
+              ].map((r) => (
+                <div
+                  key={r.name}
+                  style={{
+                    background: r.recommended ? "#f0fdf4" : "#fff1f2",
+                    border: `1.5px solid ${r.recommended ? "#86efac" : "#fca5a5"}`,
+                    borderRadius: "10px",
+                    padding: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <strong style={{ fontSize: "11px" }}>{r.name}</strong>
+                    {r.recommended && (
+                      <span style={{ fontSize: "9px", background: "#15803d", color: "#fff", borderRadius: "10px", padding: "2px 7px" }}>
+                        RECOMMENDED
+                      </span>
+                    )}
+                  </div>
+                  {[
+                    ["Distance", r.km],
+                    ["Normal Risk", r.normalRisk],
+                    ["Monsoon Risk", r.monsoonRisk],
+                    ["Disruption (Hist.)", r.disruption],
+                  ].map(([l, v], i) => (
+                    <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", marginBottom: "3px" }}>
+                      <span style={{ color: "#64748b" }}>{l}</span>
+                      <strong
+                        style={{
+                          color: i === 2 ? (r.recommended ? "#d97706" : "#b91c1c") : i === 3 ? r.disruptionColor : "#334155",
+                        }}
+                      >
+                        {v}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Seasonal Recommendation */}
+          <div
+            style={{
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              display: "flex",
+              gap: "8px",
+              alignItems: "flex-start",
+            }}
+          >
+            <BrainCircuit size={15} style={{ color: "#38bdf8", flexShrink: 0, marginTop: "2px" }} />
+            <p style={{ margin: 0, fontSize: "12px", color: "#bae6fd", lineHeight: "1.5" }}>
+              <strong style={{ color: "#7dd3fc" }}>Seasonal Recommendation:</strong> During monsoon
+              season, Route B (Bhalukpong Valley) experiences 68% disruption risk due to landslide
+              activity and heavy rainfall. PATHNOVA recommends Route A (Tezpur Bypass) for all
+              critical logistics movements — June through September.{" "}
+              <span style={{ color: "#94a3b8", fontSize: "10px" }}>(Based on historical data)</span>
+            </p>
+          </div>
+        </>
+      )}
     </section>
   );
 }
@@ -521,6 +899,7 @@ export default function Routes() {
   const [emergency, setEmergency] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [cargoType, setCargoType] = useState("medical");
 
   const [v2vAlerts, setV2VAlerts] = useState(() => getV2VAlerts());
   useEffect(() => {
@@ -557,7 +936,16 @@ export default function Routes() {
           </div>
 
           {/* 1. Route Planner */}
-          <Planner onAnalyze={() => setAnalyzed(true)} {...{ emergency, setEmergency }} />
+          <Planner
+            onAnalyze={() => setAnalyzed(true)}
+            {...{ emergency, setEmergency, cargoType, setCargoType }}
+          />
+
+          {/* Essential-Supply Priority Decision Panel */}
+          <EssentialSupplyCard cargoType={cargoType} />
+
+          {/* Seasonal Route Intelligence */}
+          <SeasonalRouteIntelligence />
 
           {/* Route Summary (shown after Analyze) */}
           {analyzed && (

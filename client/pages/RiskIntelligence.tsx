@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CloudRain,
   LayoutDashboard,
+  Leaf,
   Map as MapIcon,
   Menu,
   Moon,
@@ -16,6 +17,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   Route as RouteIcon,
+  ShieldCheck,
   Sun,
   Truck,
   X,
@@ -543,6 +545,98 @@ function WhyDangerous({ zone, v2vAlerts }: { zone: RiskZone; v2vAlerts?: ReturnT
           <b>{zone.confidence}%</b>Signal Confidence
         </span>
       </div>
+
+      {/* Community Trust Score note */}
+      {activeV2V && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px",
+            background: "#f0fdf4",
+            border: "1px solid #86efac",
+            borderRadius: "8px",
+            padding: "10px 12px",
+            marginTop: "12px",
+          }}
+        >
+          <ShieldCheck size={15} style={{ color: "#15803d", flexShrink: 0, marginTop: "2px" }} />
+          <p style={{ margin: 0, fontSize: "11px", color: "#166534", lineHeight: "1.5" }}>
+            <strong>Community Trust Score: 86/100 (High Confidence)</strong> — 3 independent
+            drivers reported this hazard. Photo evidence verified. Report has been shared across the
+            active fleet via V2V Hazard Sharing.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* 3b. Seasonal Risk Monitor Component */
+function SeasonalRiskCard() {
+  return (
+    <section className="panel" style={{ marginTop: "18px", padding: "18px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#f0fdf4", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", justifyContent: "center", color: "#16a34a" }}>
+            <Leaf size={18} />
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#0f172a" }}>Seasonal Route Intelligence</h3>
+              <span style={{ fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a" }}>
+                Active Season: Monsoon (Jun – Sep)
+              </span>
+            </div>
+            <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
+              Dynamic risk recalibration reflecting active seasonal rainfall and slope saturation across the North East.
+            </p>
+          </div>
+        </div>
+        <Link to="/routes" style={{ fontSize: "12px", fontWeight: 600, color: "#2563eb", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+          Simulate corridors in Route Planner <ChevronRight size={14} />
+        </Link>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+        <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+          <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#64748b", display: "block" }}>
+            Dry / Fair Season Baseline
+          </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "6px", margin: "6px 0 4px" }}>
+            <span style={{ fontSize: "22px", fontWeight: 800, color: "#16a34a" }}>24%</span>
+            <span style={{ fontSize: "11px", color: "#64748b" }}>Average Risk Index</span>
+          </div>
+          <p style={{ margin: 0, fontSize: "11px", color: "#64748b", lineHeight: "1.4" }}>
+            Corridors remain open. Primary hazards: nighttime fog and single-lane bottlenecks.
+          </p>
+        </div>
+
+        <div style={{ padding: "12px", background: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca" }}>
+          <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#dc2626", display: "block" }}>
+            Monsoon Season (Current)
+          </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "6px", margin: "6px 0 4px" }}>
+            <span style={{ fontSize: "22px", fontWeight: 800, color: "#dc2626" }}>68%</span>
+            <span style={{ fontSize: "11px", color: "#b91c1c" }}>Elevated Risk (+44%)</span>
+          </div>
+          <p style={{ margin: 0, fontSize: "11px", color: "#7f1d1d", lineHeight: "1.4" }}>
+            Severe landslide susceptibility along NH-13/NH-15 cuts. Flash floods reported in foothill bypasses.
+          </p>
+        </div>
+
+        <div style={{ padding: "12px", background: "#eff6ff", borderRadius: "8px", border: "1px solid #bfdbfe" }}>
+          <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#2563eb", display: "block" }}>
+            AI Seasonal Recommendation
+          </span>
+          <div style={{ fontSize: "12px", fontWeight: 700, color: "#1e40af", margin: "6px 0 4px" }}>
+            Tezpur–Banderdewa Bypass Recommended
+          </div>
+          <p style={{ margin: 0, fontSize: "11px", color: "#1e3a8a", lineHeight: "1.4" }}>
+            Bypasses the vulnerable Bhalukpong gorge. 28 min longer transit, but reduces disruption probability by 62%.
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
@@ -715,6 +809,9 @@ export default function RiskIntelligence() {
           <div style={{ marginTop: "18px" }}>
             <WhyDangerous zone={activeZone} v2vAlerts={v2vAlerts} />
           </div>
+
+          {/* 3b. Seasonal Risk Monitor */}
+          <SeasonalRiskCard />
 
           {/* 4. AI Recommended Action */}
           <RecommendedAction zone={activeZone} />

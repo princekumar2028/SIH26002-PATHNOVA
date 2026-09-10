@@ -19,6 +19,7 @@ import {
   Camera,
   CheckCircle2,
   ChevronDown,
+  CloudOff,
   CloudRain,
   Eye,
   Home,
@@ -26,9 +27,13 @@ import {
   Map as MapIcon,
   MapPin,
   Navigation,
+  Package,
+  Phone,
   Route as RouteIcon,
+  ShieldCheck,
   Thermometer,
   Truck,
+  Wifi,
   Wind,
   TriangleAlert,
   X,
@@ -77,6 +82,8 @@ export default function DriverPortal() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("TRK-104");
+  // Offline Last-Known-Safe simulation toggle
+  const [isSimOffline, setIsSimOffline] = useState(false);
 
   const weather = useWeather("Guwahati");
   const criticalAlert =
@@ -132,6 +139,7 @@ export default function DriverPortal() {
             weather={weather}
             criticalAlert={criticalAlert}
             activeHazard={activeHazard}
+            isSimOffline={isSimOffline}
             onViewAlert={() => setActiveTab("alerts")}
             onReport={() => setActiveTab("report")}
           />
@@ -159,11 +167,33 @@ export default function DriverPortal() {
             <span className="driver-header-portal">Driver Portal</span>
           </div>
         </div>
-        <div className="driver-identity">
+        <div className="driver-identity" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div className="driver-identity-row">
             <Truck size={14} />
             <span>{selectedVehicleId}</span>
           </div>
+          {/* Offline simulation toggle */}
+          <button
+            id="driver-offline-toggle"
+            onClick={() => setIsSimOffline((v) => !v)}
+            title={isSimOffline ? "Simulate online mode" : "Simulate network loss (Offline Last-Known-Safe)"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "4px 10px",
+              borderRadius: "20px",
+              border: "none",
+              fontSize: "10px",
+              fontWeight: 700,
+              cursor: "pointer",
+              background: isSimOffline ? "#7c2d12" : "#134e4a",
+              color: isSimOffline ? "#fca5a5" : "#5eead4",
+            }}
+          >
+            {isSimOffline ? <CloudOff size={12} /> : <Wifi size={12} />}
+            {isSimOffline ? "Offline" : "Online"}
+          </button>
         </div>
       </header>
 
@@ -269,12 +299,14 @@ function HomeContent({
   weather,
   criticalAlert,
   activeHazard,
+  isSimOffline = false,
   onViewAlert,
   onReport,
 }: {
   weather: ReturnType<typeof useWeather>;
   criticalAlert: (typeof alertRecords)[0] | null;
   activeHazard: V2VHazardAlert | null;
+  isSimOffline?: boolean;
   onViewAlert: () => void;
   onReport: () => void;
 }) {
@@ -312,6 +344,104 @@ function HomeContent({
 
   return (
     <div className="driver-home">
+      {/* ── OFFLINE LAST-KNOWN-SAFE SECTION ── */}
+      {isSimOffline ? (
+        <section
+          className="driver-card"
+          style={{ border: "1.5px solid #92400e", background: "#1c1207" }}
+        >
+          <div className="driver-card-header" style={{ color: "#fbbf24" }}>
+            <CloudOff size={20} />
+            <span>OFFLINE — LAST-KNOWN-SAFE</span>
+            <span
+              className="driver-live-badge"
+              style={{ background: "#451a03", color: "#fbbf24", borderColor: "#92400e" }}
+            >
+              Cached
+            </span>
+          </div>
+          <p style={{ color: "#fde68a", fontSize: "11px", margin: "0 0 12px" }}>
+            Network connection unavailable. Displaying the latest available route and hazard
+            information cached on this device.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "12px" }}>
+            {[
+              ["Last Known Route", "Guwahati → Itanagar (NH-15 / NH-415)"],
+              ["Last Known Risk", "HIGH — Landslide near Bhalukpong"],
+              ["Known Hazard", "Landslide reported ahead by nearby vehicle"],
+              ["Last Updated", "10 minutes ago (Cached locally)"],
+              ["Safe Alternative", "Route B via Tezpur–Banderdewa (Risk: 35%)"],
+              ["Cache Source", "PATHNOVA offline safety cache"],
+            ].map(([label, val]) => (
+              <div
+                key={label}
+                style={{
+                  background: "#292107",
+                  borderRadius: "6px",
+                  padding: "8px 10px",
+                  border: "1px solid #78350f",
+                }}
+              >
+                <div style={{ fontSize: "9px", color: "#d97706", fontWeight: 700, marginBottom: "2px", textTransform: "uppercase" }}>
+                  {label}
+                </div>
+                <div style={{ fontSize: "11px", color: "#fde68a", fontWeight: 600 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              background: "#1e1105",
+              border: "1px solid #78350f",
+              borderRadius: "6px",
+              padding: "10px 12px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
+            }}
+          >
+            <Phone size={15} style={{ color: "#fbbf24", flexShrink: 0, marginTop: "2px" }} />
+            <div>
+              <div style={{ fontSize: "10px", color: "#fbbf24", fontWeight: 700, marginBottom: "3px" }}>
+                EMERGENCY CONTACTS
+              </div>
+              <div style={{ fontSize: "11px", color: "#fde68a", lineHeight: "1.6" }}>
+                Highway Patrol: <strong>112 / 1033</strong> · Nearest Shelter:{" "}
+                <strong>Chariduar Depot (Km 42)</strong> · PATHNOVA Ops Center:{" "}
+                <strong>+91-361-2345678</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+        /* ── ONLINE SAFETY STATUS ── */
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#052e16",
+            border: "1px solid #15803d",
+            borderRadius: "10px",
+            padding: "8px 14px",
+            marginBottom: "4px",
+          }}
+        >
+          <ShieldCheck size={16} style={{ color: "#4ade80" }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "11px", color: "#4ade80", fontWeight: 700 }}>
+              Safety information is up to date
+            </div>
+            <div style={{ fontSize: "10px", color: "#86efac" }}>
+              Route intelligence, road risk, and hazard alerts are live.
+            </div>
+          </div>
+          <span style={{ fontSize: "9px", color: "#6ee7b7", background: "#064e3b", padding: "2px 8px", borderRadius: "10px" }}>
+            Last synced: Just now
+          </span>
+        </div>
+      )}
+
       {/* ── ROAD RISK & HAZARD SECTION ── */}
       <section
         className={`driver-card driver-card--risk ${
@@ -447,6 +577,43 @@ function HomeContent({
               <span className="driver-stat-value">{DEMO_ROUTE.distance}</span>
             </div>
           </div>
+        </div>
+        {/* Essential-Supply Cargo Manifest Badge */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#1e0e3e",
+            border: "1px solid #7c3aed",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            marginTop: "10px",
+          }}
+        >
+          <Package size={15} style={{ color: "#c084fc", flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "10px", color: "#a78bfa", fontWeight: 700, marginBottom: "1px" }}>
+              CARGO MANIFEST — ESSENTIAL SUPPLY
+            </div>
+            <div style={{ fontSize: "11px", color: "#ddd6fe" }}>
+              Medical Supplies · Priority:{" "}
+              <span style={{ color: "#f87171", fontWeight: 700 }}>CRITICAL</span>
+              {" "}· Safer route protocol active
+            </div>
+          </div>
+          <span
+            style={{
+              fontSize: "9px",
+              background: "#4c1d95",
+              color: "#c4b5fd",
+              padding: "2px 8px",
+              borderRadius: "10px",
+              fontWeight: 700,
+            }}
+          >
+            Priority Delivery
+          </span>
         </div>
         <div className="driver-route-actions">
           <button

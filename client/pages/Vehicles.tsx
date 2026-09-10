@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -30,6 +30,7 @@ import {
   ExternalLink,
   ShieldAlert,
   Info,
+  Package,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import PathnovaLogo from "@/components/PathnovaLogo";
@@ -450,6 +451,7 @@ function VehicleTable({
           <thead>
             <tr>
               <th>Vehicle ID &amp; Type</th>
+              <th>Cargo &amp; Priority</th>
               <th>Assigned Driver</th>
               <th>Corridor Route</th>
               <th>Current Speed</th>
@@ -464,7 +466,7 @@ function VehicleTable({
           <tbody>
             {records.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ textAlign: "center", padding: "30px", color: "#8497a7" }}>
+                <td colSpan={11} style={{ textAlign: "center", padding: "30px", color: "#8497a7" }}>
                   No vehicles found matching "{search}". Clear your search or filter.
                 </td>
               </tr>
@@ -478,9 +480,32 @@ function VehicleTable({
                       <small>{v.vehicleType}</small>
                       {v2vHazard && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "10px", background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: "4px", padding: "1px 6px", marginTop: "3px", fontWeight: 700 }}>
-                          âš  Hazard Ahead
+                          ⚠ Hazard Ahead
                         </span>
                       )}
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "#1e293b", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={v.cargo}>
+                          {v.cargo || "General Freight"}
+                        </span>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            width: "fit-content",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "1px 6px",
+                            borderRadius: "4px",
+                            background: v.priority === "Critical" ? "#fef2f2" : v.priority === "High" ? "#fffbeb" : "#f1f5f9",
+                            color: v.priority === "Critical" ? "#dc2626" : v.priority === "High" ? "#d97706" : "#475569",
+                            border: `1px solid ${v.priority === "Critical" ? "#fecaca" : v.priority === "High" ? "#fde68a" : "#e2e8f0"}`,
+                          }}
+                        >
+                          {v.priority || "Normal"} Priority
+                        </span>
+                      </div>
                     </td>
                     <td>{v.driver}</td>
                     <td>
@@ -626,6 +651,47 @@ function DetailsDrawer({
           >
             {vehicle.riskLevel} Risk
           </span>
+          {vehicle.priority && (
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "9999px",
+                background: vehicle.priority === "Critical" ? "#fef2f2" : vehicle.priority === "High" ? "#fffbeb" : "#f1f5f9",
+                color: vehicle.priority === "Critical" ? "#dc2626" : vehicle.priority === "High" ? "#d97706" : "#475569",
+                border: `1px solid ${vehicle.priority === "Critical" ? "#fecaca" : vehicle.priority === "High" ? "#fde68a" : "#e2e8f0"}`,
+              }}
+            >
+              {vehicle.priority} Priority
+            </span>
+          )}
+        </div>
+
+        {/* Cargo & Supply Priority Card */}
+        <div
+          style={{
+            margin: "14px 0",
+            padding: "12px",
+            background: vehicle.priority === "Critical" ? "#fff7ed" : "#f8fafc",
+            border: `1px solid ${vehicle.priority === "Critical" ? "#fed7aa" : "#e2e8f0"}`,
+            borderRadius: "8px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+            <Package size={14} style={{ color: vehicle.priority === "Critical" ? "#ea580c" : "#64748b" }} />
+            <span style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: vehicle.priority === "Critical" ? "#c2410c" : "#64748b" }}>
+              Cargo Manifest &amp; Priority
+            </span>
+          </div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#1e293b" }}>
+            {vehicle.cargo || "General Cargo"}
+          </div>
+          {vehicle.priority === "Critical" && (
+            <div style={{ fontSize: "11px", color: "#9a3412", marginTop: "4px", lineHeight: "1.4" }}>
+              ⚡ Essential-Supply Protocol active: Routing algorithms prioritize safe bypass corridors over shortest ETA.
+            </div>
+          )}
         </div>
 
         {/* Route Progress Bar */}

@@ -21,6 +21,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  ShieldAlert,
   Sun,
   Truck,
   X,
@@ -551,6 +552,47 @@ function Drawer({
             {alert.description}
           </p>
         </div>
+
+        {/* Community Trust Score — shown for V2V Hazard alerts */}
+        {alert.type === "V2V Hazard" && (
+          <div
+            style={{
+              marginTop: "14px",
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
+              borderRadius: "10px",
+              padding: "12px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div style={{ fontSize: "10px", color: "#15803d", fontWeight: 700 }}>COMMUNITY TRUST SCORE</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
+                <span style={{ fontSize: "22px", fontWeight: 900, color: "#15803d" }}>86</span>
+                <span style={{ fontSize: "11px", color: "#94a3b8" }}>/100</span>
+                <span style={{ fontSize: "9px", fontWeight: 700, background: "#15803d", color: "#fff", padding: "2px 7px", borderRadius: "10px", marginLeft: "5px" }}>
+                  HIGH CONFIDENCE
+                </span>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "8px" }}>
+              {[
+                ["Source", "Field Driver Report"],
+                ["Photo Evidence", "Verified"],
+                ["Corroborating Reports", "3 nearby reports"],
+                ["V2V Verification", "Shared to fleet"],
+              ].map(([l, v]) => (
+                <div key={l} style={{ fontSize: "10px" }}>
+                  <span style={{ color: "#94a3b8", display: "block" }}>{l}</span>
+                  <strong style={{ color: "#334155" }}>{v}</strong>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: "11px", color: "#166534", lineHeight: "1.5" }}>
+              <ShieldCheck size={12} style={{ display: "inline", marginRight: "4px" }} />
+              Confidence elevated — 3 independent nearby drivers corroborated this hazard and photo evidence was verified.
+            </div>
+          </div>
+        )}
 
         {/* Recommended Action */}
         <section className="recommended-action" style={{ marginTop: "16px" }}>
